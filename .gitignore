@@ -1,0 +1,11 @@
+# First, deny all.
+/**/*
+
+# Allow the files, folders, and subfolder(s) you want to track.
+!/
+!/**
+
+# Block any files that need to remain blocked.
+/HELP_php-error.txt
+/dt5.db
+/phpliteadmin.php

@@ -1,0 +1,24 @@
+Debug and Tattle 5
+
+
+November 29, 2016 -
+	User Interface is created.
+	Web application is using fixed dimensions of 1355px by 635px. Fits perfect at full zoom on a Acer C720 Chromebook.
+	UI uses overlapping windows for controls. Hovering over the exposed portion of a control (left and right sides) will bring it forward.
+	Entire tattle is requested and displayed.
+	Left UI Controls has command buttons for Refresh, Delete Stale, Delete All, Settings.
+		Refresh: works.
+		Delete Stale: NOT FUNCTIONAL YET.
+		Delete All: works.
+		Settings: NOT FUNCTIONAL YET. -- should open a modal window.
+	Left UI Controls has navigation buttons that will scroll the main view div to the selected heading.
+	Right UI Controls shows the list of tattles (newest on top.) Clicking one will display it. Clicking the trash can graphic will delete that tattle and then reload the list.
+		Open Tattle: works.
+		Delete Tattle: works.
+	AJAX: Active server requests are indicated by a progress bar in the upper-right corner of the application.
+
+	MISSING ---- mainviewingarea_top - the basics - tattle info section still has test data and is NOT coming from the loaded tattle.
+	--
+
+
+Program started November 29, 2016
