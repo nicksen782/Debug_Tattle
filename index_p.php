@@ -10,7 +10,7 @@ if( ! file_exists( substr($GLOBALS['dt5_db'], 7) )){
 	// Create the file. By trying to open the file it will be created!
 	$tattle5_db = $GLOBALS['dt5_db'];
 	$dbhandle  = new sqlite3_DB_PDO_tattle($tattle5_db) or die("cannot open the database");
-	$s_SQL = file_get_contents( "sql.sql" ) ;
+	$s_SQL = file_get_contents( dirname(__FILE__)."/sql.sql" ) ;
 	$prp = $dbhandle->prepare($s_SQL);
 	$retval = $dbhandle->execute();
 	tattle5("New database created!", $retval);
