@@ -36,6 +36,7 @@ function tattle5($smsg, $lmsg){
 			, server
 			, thedate
 			, user
+			, appfilter
 		)
 		VALUES
 		(
@@ -50,10 +51,23 @@ function tattle5($smsg, $lmsg){
 			, :server
 			, :thedate
 			, :user
+			, :appfilter
 		);
     ";
 	// Prepare the query.
 	$dbhandle->prepare($s_SQL);
+
+	$dbt=debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2);
+    $caller = isset($dbt[1]['function']) ? $dbt[1]['function'] : null;
+    $function = $caller;
+    global $dt5_app;
+    if($dt5_app){
+    	// Only alpha and numeric.
+    	$appfilter = preg_replace("/[^a-zA-Z0-9]+/", "", $dt5_app);
+    	// All lowercase.
+    	$appfilter = strtolower($appfilter);
+    }
+    else{ $appfilter = basename($_SERVER['PHP_SELF']) ; }
 
 	// Bind the data then execute.
 	$dbhandle->bind(':shortmsg',  $smsg);
@@ -67,6 +81,7 @@ function tattle5($smsg, $lmsg){
 	$dbhandle->bind(':server',    json_encode($_SERVER));
 	$dbhandle->bind(':thedate',   time());
 	$dbhandle->bind(':user',      "");
+	$dbhandle->bind(':appfilter', $appfilter . ": " . $function) ;
 
 	// Execute the query.
 	$retval = $dbhandle->execute();
@@ -79,6 +94,44 @@ if(isset($_POST['o'])){
 	if($_POST['o'] == 'deleteTattle')				{ deleteTattle();			exit(); }
 	if($_POST['o'] == 'deleteStaleTattles') 		{ deleteStaleTattles();		exit(); }
 	if($_POST['o'] == 'deleteAllTattles') 			{ deleteAllTattles();		exit(); }
+	if($_POST['o'] == 'getfilters') 				{ getfilters();		exit(); }
+	if($_POST['o'] == 'deleteAllTattles_byFilter') 	{ deleteAllTattles_byFilter();		exit(); }
+}
+
+function getfilters(){
+	// Look at the database and determine all unique filters used by tattles.
+
+	// Prepares this query.
+	$tattle5_db = $GLOBALS['dt5_db'];
+	$dbhandle  = new sqlite3_DB_PDO_tattle($tattle5_db) or die("cannot open the database");
+
+	// Query to retrieve records. Order by newer records at the top.
+	$query1="
+		SELECT distinct(appfilter)
+		FROM debug_tattle
+		ORDER BY thedate DESC
+	;";
+
+	// Prepares this query.
+	$dbhandle->prepare($query1);
+
+	// Execute the query.
+	$retval_execute1 = $dbhandle->statement->execute();
+
+	// Retrieve rows.
+	$result = $dbhandle->statement->fetchAll(PDO::FETCH_ASSOC) ;
+
+	// Count number of rows returned. (SQLITE doesn't have a rowCount() function.)
+	// $result['tattleRowCount'] = sizeof($result['rows']);
+
+	// Now go through all of the records and determine which of them are stale (older than 5 minutes).
+
+	// Return all the data.
+	echo json_encode($result);
+
+	// echo $dbhandle->print_r_2_string($result);
+
+
 }
 
 function getTattleList(){
@@ -88,13 +141,16 @@ function getTattleList(){
 
 	// Query to retrieve records. Order by newer records at the top.
 	$query1="
-		SELECT id, shortmsg, thedate, user
+		SELECT id, shortmsg, thedate, user, appfilter
 		FROM debug_tattle
+		WHERE appfilter = :appfilter
 		ORDER BY id DESC
 	;";
 
 	// Prepares this query.
 	$dbhandle->prepare($query1);
+	if($_POST['appfilter']=='nofilter'){ $_POST['appfilter']=""; }
+	$dbhandle->bind(':appfilter', $_POST['appfilter']);
 
 	// Execute the query.
 	$retval_execute1 = $dbhandle->statement->execute();
@@ -109,17 +165,6 @@ function getTattleList(){
 	$nowdatetime = strtotime('300 seconds ago');
 
 	for($i=0; $i<sizeof($result['rows']); $i++){
-		// Add in the new key, stale
-		// $result['rows'][$i]['stale']="";
-
-		// Add in the new key, secondsago.
-		// $result['rows'][$i]['secondsago']= ( (strtotime('now') - ($result['rows'][$i]['date']))) ;
-
-		// Set key to 'STALE' if record is stale.
-		// if(strtotime($result['rows'][$i]['date'])<$nowdatetime){
-		// 	$result['rows'][$i]['stale']="STALE";
-		// }
-
 		// Give a nice date.
 		$result['rows'][$i]['thedate'] = date("Y-m-d H:i:s", ( $result['rows'][$i]['thedate'] ));
 	}
@@ -187,6 +232,36 @@ function deleteTattle(){
 	);
 }
 
+function deleteAllTattles_byFilter(){
+	// Prepares this query.
+	$tattle5_db = $GLOBALS['dt5_db'];
+	$dbhandle  = new sqlite3_DB_PDO_tattle($tattle5_db) or die("cannot open the database");
+
+	// SQL delete query.
+	$statement_SQL = "
+		DELETE
+		FROM debug_tattle
+		WHERE appfilter = :appfilter
+	;";
+
+	// Prepare, bind placeholders, then execute the SQL query.
+	$dbhandle->prepare($statement_SQL);
+	if($_POST['appfilter']=='nofilter'){ $_POST['appfilter']=""; }
+	$dbhandle->bind(':appfilter', $_POST['appfilter']);
+	$retval_execute1 = $dbhandle->execute();
+
+	// // The database is clear. This is a good time to do a vacuum !
+	// VACUUMdb();
+
+	// Output the data.
+	echo json_encode(
+		array(
+			"retval_execute1" => $retval_execute1,
+		)
+	);
+
+}
+
 function deleteAllTattles(){
 	// Prepares this query.
 	$tattle5_db = $GLOBALS['dt5_db'];
@@ -204,6 +279,8 @@ function deleteAllTattles(){
 
 	// The database is clear. This is a good time to do a vacuum !
 	VACUUMdb();
+
+	tattle5("All tattles have been deleted.", null);
 
 	// Output the data.
 	echo json_encode(
