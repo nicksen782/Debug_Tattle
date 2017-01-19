@@ -16,6 +16,20 @@ if( ! file_exists( substr($GLOBALS['dt5_db'], 7) )){
 	tattle5("New database created!", $retval);
 }
 
+// This is used to change the PHP error handler to use Debug & Tattle instead.
+// function autotattle($error_level, $error_message, $error_file, $error_line, $error_context){
+// 	tattle5("PHP - Auto Tattle",
+// 		array(
+// 			"error_level"   => $error_level,
+// 			"error_message" => $error_message,
+// 			"error_file"    => $error_file,
+// 			"error_line"    => $error_line,
+// 			"error_context" => $error_context
+// 		)
+// 	);
+// }
+// set_error_handler("autotattle");
+
 // This function is the function that is called OUTSIDE of this program.
 function tattle5($smsg, $lmsg){
 	$tattle5_db = $GLOBALS['dt5_db'];
@@ -76,7 +90,7 @@ function tattle5($smsg, $lmsg){
 	$dbhandle->bind(':post',      json_encode($_POST));
 	$dbhandle->bind(':get',       json_encode($_GET));
 	$dbhandle->bind(':request',   json_encode($_REQUEST));
-	$dbhandle->bind(':session',   json_encode($_SESSION));
+	@$dbhandle->bind(':session',   json_encode($_SESSION));
 	$dbhandle->bind(':files',     json_encode($_FILES));
 	$dbhandle->bind(':server',    json_encode($_SERVER));
 	$dbhandle->bind(':thedate',   time());

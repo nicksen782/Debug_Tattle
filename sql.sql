@@ -11,5 +11,6 @@ CREATE TABLE if not exists debug_tattle
       files text,
       server text,
       thedate datetime NOT NULL,
-      user VARCHAR
+      user VARCHAR,
+      appfilter text
     );
