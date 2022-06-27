@@ -1,13 +1,10 @@
-# First, deny all.
-/**/*
-
-# Allow the files, folders, and subfolder(s) you want to track.
-!/
-!/**
+# Deny all.
+# /**/*
 
 # Block any files that need to remain blocked.
-/HELP_php-error.txt
-/dt5.db
-/phpliteadmin.php
-/.gitignore
-/githelp.txt
+new/
+OLD/
+
+# Allow the files, folders, and subfolder(s) you want to track.
+# !/
+# !/**
