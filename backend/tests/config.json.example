@@ -1,0 +1,4 @@
+{
+	"apikey" : "PUT_YOUR_KEY_HERE",
+	"url"    : "http://127.0.0.1/Debug_Tattle/backend/router_p.php"
+}

@@ -1,0 +1,8 @@
+{
+ "debugTest": { "f": "debugTest"      , "m": ["POST","GET","JSON"] , "r": ["ADMIN"]         , "a": [] },
+ "getAll"   : { "f": "logs_getAll"    , "m": ["POST","GET","JSON"] , "r": ["ADMIN"]         , "a": [] },
+ "removeAll": { "f": "logs_removeAll" , "m": ["POST","GET","JSON"] , "r": ["ADMIN"]         , "a": [] },
+ "getSome"  : { "f": "logs_getSome"   , "m": ["POST","GET","JSON"] , "r": ["logs_getSome"]  , "a": [ "filterName", "filterValue" ] },
+ "add"      : { "f": "logs_addOne"    , "m": ["POST","GET","JSON"] , "r": ["logs_addOne"]   , "a": [ "data", false ] },
+ "removeOne": { "f": "logs_removeOne" , "m": ["POST","GET","JSON"] , "r": ["logs_removeOne"], "a": [ "tid" ] }
+}

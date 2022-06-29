@@ -4,7 +4,14 @@
 # Block any files that need to remain blocked.
 new/
 OLD/
+private/
 
 # Allow the files, folders, and subfolder(s) you want to track.
 # !/
 # !/**
+
+backend/db/
+backend/db_init/personal.sql
+backend/tests/node_modules/
+tattle6-error.txt
+backend/tests/config.json
