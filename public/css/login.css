@@ -1,0 +1,105 @@
+* {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "segoe ui", roboto, oxygen, ubuntu, cantarell, "fira sans", "droid sans", "helvetica neue", Arial, sans-serif;
+    font-size: 16px;
+}
+
+body {
+    background-color: #282d34;
+}
+
+.login {
+    width: 400px;
+    background-color: #ffffff;
+    box-shadow: 0 0 9px 0 rgba(0, 0, 0, 0.3);
+    margin: 100px auto;
+}
+
+.login h1.title {
+    text-align: center;
+    color: #5b6574;
+    font-size: 24px;
+    padding: 10px 0 10px 0;
+    border-bottom: 1px solid #dee0e4;
+}
+.login div.instruction {
+    text-align: center;
+    color: #5b6574;
+    font-size: 20px;
+    padding: 0px 0 15px 0;
+    border-bottom: 1px solid #dee0e4;
+}
+
+.login form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+.login form label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    background-color: #3274d6;
+    color: #ffffff;
+}
+
+.login form input[type="password"], .login form input[type="text"] {
+    width: 310px;
+    height: 50px;
+    border: 1px solid #dee0e4;
+    margin-bottom: 20px;
+    padding: 0 15px;
+}
+
+.login form input#logout,
+.login form input#submit,
+.login form input[type="submit"]
+ {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    background-color: #3274d6;
+    border: 0;
+    cursor: pointer;
+    font-weight: bold;
+    color: #ffffff;
+    transition: background-color 0.2s;
+    /* margin-bottom: 5px; */
+    border-bottom: 5px solid white;
+    border-color: cornflowerblue;
+}
+
+.login form input#logout:hover,
+.login form input#submit:hover,
+.login form input[type="submit"]:hover {
+    background-color: #2868c7;
+    transition: background-color 0.2s;
+}
+
+.login #loginStatus {
+    /* padding: 0; */
+    /* margin: 0; */
+    width: 100%;
+}
+
+.login #loginStatus.hide {
+    display: none;
+}
+
+.login #loginStatus textarea {
+	text-align: left !important;
+    white-space: pre;
+	width: 390px;
+    height: 160px;
+    font-family: monospace;
+    font-size: 12px;
+	resize:none;
+}
+
+.textCenter {
+	text-align: center;
+}

@@ -7,7 +7,7 @@ include "backend/db_conn_p.php";
 
 // Global.
 $configFile = json_decode(file_get_contents( "backend/tests/config.json" ), true) ;
-$url = $configFile['url']; 
+$urlHttp = $configFile['urlHttp']; 
 $active_apikey = $configFile['apikey']; 
 $dbFile = "backend/db/tattle6.db";
 unlink($dbFile);
@@ -15,9 +15,8 @@ if(!file_exists($dbFile)){ sqlite3_DB_PDO::db_init($dbFile); }
 // $dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
 // Test GET: PHP 5.3.3 style.
-function php_get_1($key, $value, $apikey){
+function php_fgc_get1($key, $value, $apikey, $url){
 	// call_user_func(function() { 
-		global $url;
 		$data = http_build_query(
 			array(
 				'o'    => 'add', 
@@ -38,9 +37,8 @@ function php_get_1($key, $value, $apikey){
 	return true;
 }
 // Test GET: PHP 7+ style.
-function php_get_2($key, $value, $apikey){
+function php_fgc_get2($key, $value, $apikey, $url){
 	// call_user_func(function() { 
-		global $url;
 		$_message = http_build_query([
 			'o'    => 'add', 
 			'key'  => $apikey,
@@ -58,9 +56,8 @@ function php_get_2($key, $value, $apikey){
 	return true;
 }
 // Test POST: PHP 5.3.3 style.
-function php_post_1($key, $value, $apikey){
+function php_fgc_post1($key, $value, $apikey, $url){
 	// call_user_func(function() { 
-		global $url;
 		$data = http_build_query(
 			array(
 				'o'    => 'add', 
@@ -87,9 +84,8 @@ function php_post_1($key, $value, $apikey){
 	return true;
 }
 // Test POST: PHP 7+ style.
-function php_post_2($key, $value, $apikey){
+function php_fgc_post2($key, $value, $apikey, $url){
 	// call_user_func(function() { 
-		global $url;
 		$data = http_build_query(
 			[
 				'o'    => 'add', 
@@ -120,28 +116,29 @@ function php_post_2($key, $value, $apikey){
 function tester($tests){
 	for($i=0; $i<count($tests); $i+=1){
 		$args = [ 
-			$tests[$i]['key'], 
-			$tests[$i]['value'], 
-			$tests[$i]['apikey'] 
+			$tests[$i]['k'], 
+			$tests[$i]['v'], 
+			$tests[$i]['a'],
+			$tests[$i]['u'] 
 		];
 		$success = call_user_func_array( 
-			$tests[$i]['func'], 
+			$tests[$i]['f'], 
 			...[ $args ] 
 		); 
 
 		if($success){ 
-			echo $tests[$i]['func'] . " :   " . json_encode(getLastRecord()) . "\n"; 
+			echo $tests[$i]['f'] . " :   " . json_encode(getLastRecord()) . "\n"; 
 		}
 		else { 
-			echo $tests[$i]['func'] . '  : FAILED'."\n"; 
+			echo $tests[$i]['f'] . '  : FAILED'."\n"; 
 		}
 	}
 };
 tester([
-	[ "key"=>"php_get_1" , "value"=>"GET: PHP 5.3.3" , "func"=> "php_get_1" , "apikey"=>$active_apikey],
-	[ "key"=>"php_get_2" , "value"=>"GET: PHP 7+"    , "func"=> "php_get_2" , "apikey"=>$active_apikey],
-	[ "key"=>"php_post_1", "value"=>"POST: PHP 5.3.3", "func"=> "php_post_1", "apikey"=>$active_apikey],
-	[ "key"=>"php_post_2", "value"=>"POST: PHP 7+"   , "func"=> "php_post_2", "apikey"=>$active_apikey],
+	[ "f"=> "php_fgc_get1" , "k"=>"php_fgc_get1" , "v"=>"GET : FGC PHP 5.3.3", "a"=>$active_apikey, "u"=>$urlHttp],
+	[ "f"=> "php_fgc_get2" , "k"=>"php_fgc_get2" , "v"=>"GET : FGC PHP 7+"   , "a"=>$active_apikey, "u"=>$urlHttp],
+	[ "f"=> "php_fgc_post1", "k"=>"php_fgc_post1", "v"=>"POST: FGC PHP 5.3.3", "a"=>$active_apikey, "u"=>$urlHttp],
+	[ "f"=> "php_fgc_post2", "k"=>"php_fgc_post2", "v"=>"POST: FGC PHP 7+"   , "a"=>$active_apikey, "u"=>$urlHttp],
 ]);
 echo "\n";
 

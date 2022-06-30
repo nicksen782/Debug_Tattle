@@ -18,7 +18,7 @@ chdir($_appdir);
 $dbFile = "backend/db/tattle6.db";
 $active_apikey = "";
 
-// POST data may be in either $_POST or php:input. 
+// POST data may be in either $_POST or php://input. 
 inputJsonToPost();
 
 // Check for an 'o' value.
@@ -28,29 +28,31 @@ $reqMethod = "UNKNOWN";
 include "backend/db_conn_p.php";
 if(!file_exists($dbFile)){ sqlite3_DB_PDO::db_init($dbFile); }
 
-// Was a request received? Process it.
-if     ( $_POST['o'] ) { $reqMethod = "POST"; API_REQUEST( $_POST['o'], $_POST ); }
-else if( $_GET ['o'] ) { $reqMethod = "GET" ; API_REQUEST( $_GET['o'] , $_GET  ); }
+if(!$doNotRun_API_REQUEST){
+	// Was a request received? Process it.
+	if     ( $_POST['o'] ) { $reqMethod = "POST"; API_REQUEST( $_POST['o'], $_POST ); }
+	else if( $_GET ['o'] ) { $reqMethod = "GET" ; API_REQUEST( $_GET['o'] , $_GET  ); }
 
-// No 'o' value was provided.
-else{
-	// $error_debug = [];
-	// $i=0;
-	// array_push($error_debug, [ (str_pad($i++, 2, "0", STR_PAD_LEFT)) . '*_$test1' => $test1                  ] );	
-	// $stats['error_debug'] = $error_debug;
+	// No 'o' value was provided.
+	else{
+		// $error_debug = [];
+		// $i=0;
+		// array_push($error_debug, [ (str_pad($i++, 2, "0", STR_PAD_LEFT)) . '*_$test1' => $test1                  ] );	
+		// $stats['error_debug'] = $error_debug;
 
-	$_message = [
-		"origin" => [ "FILE" =>  __FILE__ , "LINE" =>  __LINE__ , "FUNCTION" => __FUNCTION__ ],
-		"data"   => [ 
-			'main' => "No 'o' value was provided." ,
-		]
-	];
-	logs_addOne($_message, true);
+		$_message = [
+			"origin" => [ "FILE" =>  __FILE__ , "LINE" =>  __LINE__ , "FUNCTION" => __FUNCTION__ ],
+			"data"   => [ 
+				'main' => "No 'o' value was provided." ,
+			]
+		];
+		logs_addOne($_message, true);
 
-	$stats['error']=true;
-	$stats['error_text']="No 'o' value was provided."  ;
-	echo json_encode( $stats );
-	exit();
+		$stats['error']=true;
+		$stats['error_text']="No 'o' value was provided."  ;
+		echo json_encode( $stats );
+		exit();
+	}
 }
 
 // *****
@@ -68,8 +70,9 @@ function API_REQUEST($o, $data){
 	$stats['errors'] = [];
 
 	// Make sure that the key is valid. 
-	if( !check_apikey($active_apikey) || !$active_apikey ){ 
+	if( !check_apikey($active_apikey, false) || !$active_apikey ){ 
 		$stats['error'] = true;
+		$stats["error_key"] = "ERROR_LOGIN_BAD_KEY";
 		array_push($stats['errors'], "Unauthorized key.");
 
 		$_message = [
@@ -79,7 +82,7 @@ function API_REQUEST($o, $data){
 			]
 		];
 		logs_addOne($_message, true);
-
+		 
 		echo json_encode( $stats);
 		exit();
 	}
@@ -90,7 +93,13 @@ function API_REQUEST($o, $data){
 	// Make sure that this is not a disabled user.
 	if(in_array("DISABLED", $userRights)){ 
 		$stats['error'] = true;
+		$stats["error_key"] = "ERROR_LOGIN_DISABLED";
 		array_push($stats['errors'], "THIS USER IS DISABLED.");
+
+		// Remove the cookie.
+		$cookie_name = "debug_tattleV6_apikey";
+		$cookie_value = "";
+		setcookie($cookie_name, $cookie_value, time() - (86400 * 1));
 
 		$_message = [
 			"origin" => [ "FILE" =>  __FILE__ , "LINE" =>  __LINE__ , "FUNCTION" => __FUNCTION__ ],
@@ -112,21 +121,24 @@ function API_REQUEST($o, $data){
 	$allowed           = $hasRequiredRights;
 	$validMethod       = in_array($reqMethod, $o_values[ $o ]['m'], false) ? true : false;
 
-	// Is the API "o" value known? 
+	// Is the API 'o' value known? 
 	if( ! $knownApi ){
 		$stats['error'] = true;
+		// $stats["error_key"] = "ERROR_UNKNOWN_API";
 		array_push($stats['errors'], "Unknown API: '$o'.");
 	}
 	
 	// Determine if the user has the rights required.
 	if( ! $allowed){
 		$stats['error'] = true;
+		// $stats["error_key"] = "ERROR_UNAUTHORIZED";
 		array_push($stats['errors'], "Unauthorized request to: '$o'.");
 	}
 
 	// Can the function be called with the method. (GET/POST?)
 	if( ! $validMethod ){
 		$stats['error'] = true;
+		// $stats["error_key"] = "ERROR_INVALID_METHOD";
 		array_push($stats['errors'], "'$o' cannot be used with this method: '$reqMethod'.");
 	}
 
@@ -165,6 +177,8 @@ function API_REQUEST($o, $data){
 }
 
 // *****
+
+// Converts POST data from within php://input to $_POST (requires a 'o' key.)
 function inputJsonToPost(){
 	// Get the data from php://input and try to use json_decode.
 	$jsonData = json_decode(file_get_contents('php://input'), true);
@@ -181,12 +195,80 @@ function inputJsonToPost(){
 		$_POST = $jsonData;
 	}
 }
-function debugTest(){
-	echo json_encode("YUP! 'debugTest' works.");
+// Used at the login page.
+function login($apikey){
+	$stats = [];
+	$stats['error'] = false;
+	$stats['canLogin'] = true;
+	$stats['errors'] = [];
+	
+	// Check if the apikey is valid. 
+	$valid_apikey = check_apikey($apikey, false);
+	if(!$valid_apikey){
+		$stats['error'] = true;
+		$stats["error_key"] = "ERROR_LOGIN_BAD_KEY";
+		$stats['canLogin'] = false;
+		return $stats;
+	}
+	else{
+		// Check if the apikey is not disabled.
+		$userRights = get_rights($apikey);
+		if(in_array("DISABLED", $userRights)){ 
+			$stats['error'] = true;
+			$stats["error_key"] = "ERROR_LOGIN_DISABLED";
+			$stats['canLogin'] = false;
+			
+			// Remove the cookie.
+			$cookie_name = "debug_tattleV6_apikey";
+			$cookie_value = "";
+			setcookie($cookie_name, $cookie_value, time() - (86400 * 1));
+	
+			return $stats;
+		}
+	}
+
+	return $stats;
 }
+// Used when the client page loads.
+function validateClient(){
+	// Check for the cookie. 
+	$url = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['SERVER_ADDR'] . str_replace("app.php", "login.php", $_SERVER['REQUEST_URI']);
+	// echo $url;
 
-// *****
+	// Check for the cookie apikey.
+	$apikey = $_COOKIE['debug_tattleV6_apikey'];
+	if(!$apikey){
+		// Redirect to the login screen with message if the cookie is not present.
+		header("Location: $url?msg=ERROR_LOGIN_NO_AUTH", true, 302); // 302 Found
+		exit();
+	}
+	// Check if the apikey is valid and the apikey is not disabled.
+	else{
+		$results = check_apikey($apikey, false);
+		
+		// Check if the apikey is valid. 
+		if(!$results){
+			// Redirect to the login screen with message if the api key is not valid.
+			header("Location: $url?msg=ERROR_LOGIN_BAD_KEY", true, 302); // 302 Found
+			exit();
+		}
+		// Check if the apikey is not disabled.
+		else{
+			$userRights = get_rights($apikey);
+			if(in_array("DISABLED", $userRights)){ 
+				// Remove the cookie.
+				$cookie_name = "debug_tattleV6_apikey";
+				$cookie_value = "";
+				setcookie($cookie_name, $cookie_value, time() - (86400 * 1));
 
+				// Redirect to the login screen with message if the api is disabled.
+				header("Location: $url?msg=ERROR_LOGIN_DISABLED", true, 302); // 302 Found
+				exit();
+			}
+		}
+	}
+}
+// Returns the rights held by the specified apikey.
 function get_rights($apikey){
 	// Query the database to get the user's rights.
 
@@ -231,6 +313,7 @@ function get_rights($apikey){
 	// Return the rights that the user has.
 	return $actualRights;
 }
+// Check required rights against the user's rights. 
 function check_rights($actualRights, $requiredRights){
 	// Compare the user's $actualRights against the $requiredRights. 
 
@@ -251,9 +334,8 @@ function check_rights($actualRights, $requiredRights){
 	// Nope.
 	return false;
 }
-function check_apikey($apikey){
-	// Query the database to determine if the key used is a valid key.
-
+// Queries the database to determine if the key used is a valid key.
+function check_apikey($apikey, $outputAsJson){
 	// Bring in DB object
 	global $dbFile;
 	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
@@ -269,9 +351,34 @@ function check_apikey($apikey){
 	$exec = $dbHandle->execute();
 
 	$results = $dbHandle->statement->fetch(PDO::FETCH_COLUMN);
+	$valid = $results && count($results) ? true : false;
 
-	if( count($results) ){ return true; }
-	return false;
+	// Set the cookie if the check is valid.
+	if($valid){
+		$cookie_name = "debug_tattleV6_apikey";
+		$cookie_value = $apikey;
+		setcookie($cookie_name, $cookie_value, time() + (86400 * 1));
+	}
+	// Remove the cookie if the check is invalid.
+	else{
+		$cookie_name = "debug_tattleV6_apikey";
+		$cookie_value = "";
+		setcookie($cookie_name, $cookie_value, time() - (86400 * 1));
+	}
+
+	// If outputAsJson then send the value back as json (used by the login page.)
+	if($outputAsJson){
+		echo json_encode([
+			"error"   => !$valid, 
+			"valid"   => $valid, 
+			"error_key"   => "ERROR_LOGIN_BAD_KEY", 
+		]);
+	}
+
+	// Otherwise send a true/false flag.
+	else{
+		return $valid; 
+	}
 }
 
 // *****
@@ -349,6 +456,7 @@ function logs_addOne($message, $silent){
 	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
 	// Handle potential data issues. (ex: GET via NODE http module.)
+	$errors = null;
 	$parentKeys = count(array_keys($message));
 	$dataKeys   = count(array_keys($message['data']));
 	$dataIsSet  = isset($message['data']);
@@ -356,12 +464,10 @@ function logs_addOne($message, $silent){
 		$decoded   = json_decode($message, true);
 		$jsonError = json_last_error();
 		if($jsonError === JSON_ERROR_NONE){ 
-			$decoded['data'] = [
+			$errors = [
 				"!_M1_!"=>"JSON REPAIRED",
 				"!_M2_!"=>$reqMethod
-				// "!_MSG_!"=>"JSON REPAIRED",
-				// "!_METHOD_!"=>$reqMethod
-			] + $decoded['data'];
+			];
 			$message = $decoded; 
 		}
 	}
@@ -370,8 +476,8 @@ function logs_addOne($message, $silent){
 	$name = getUserNameByApiKey($active_apikey);
 
 	$sql  = "
-		INSERT INTO tattles (  tid,  date,  file,  line,  function,  method,  ip,  user,  apikey,  data )
-		VALUES              ( :tid, :date, :file, :line, :function, :method, :ip, :user, :apikey, :data );
+		INSERT INTO tattles (  tid,  date,  file,  line,  function,  method,  ip,  user,  apikey,  data,  errors )
+		VALUES              ( :tid, :date, :file, :line, :function, :method, :ip, :user, :apikey, :data, :errors );
 	";
 	$prep = $dbHandle->prepare( $sql );
 
@@ -384,7 +490,8 @@ function logs_addOne($message, $silent){
 	$dbHandle->bind(':ip'      , $_SERVER['REMOTE_ADDR'] );
 	$dbHandle->bind(':user'    , $name                   );
 	$dbHandle->bind(':apikey'  , $active_apikey          );
-	$dbHandle->bind(':data'    , json_encode($message["data"], JSON_PRETTY_PRINT) );
+	$dbHandle->bind(':data'    , json_encode($message["data"]) );
+	$dbHandle->bind(':errors'  , json_encode($errors) );
 
 	$exec = $dbHandle->execute();
 

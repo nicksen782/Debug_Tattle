@@ -1,14 +1,15 @@
 CREATE TABLE tattles (
 	"tid"       INTEGER PRIMARY KEY AUTOINCREMENT
 	,"date"     datetime NOT NULL
-	,"file"     VARCHAR
-	,"line"     VARCHAR
-	,"function" VARCHAR
 	,"method"   VARCHAR
+	,"file"     VARCHAR
+	,"function" VARCHAR
+	,"line"     VARCHAR
 	,"ip"       VARCHAR
 	,"user"     VARCHAR
 	,"apikey"   VARCHAR
 	,"data"     text
+	,"errors"   text
 );
 -- **END*QUERY**
 
