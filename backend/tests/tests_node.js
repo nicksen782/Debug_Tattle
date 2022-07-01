@@ -82,8 +82,8 @@ function node_https_post1(key, value, apikey, url){
 		let body = JSON.stringify( {o:'add', key:apikey, data:(_data)} );
 		const options = { 
 			method:'POST', 
-			hostname:'', 
-			path:`${url}`,
+			hostname:config.hostname, 
+			path:config.path,
 			// "headers"  : { "Content-Type":'application/x-www-form-urlencoded' }
 			"headers"  : { "Content-Type":'application/json' },
 			"port": 443
@@ -202,9 +202,9 @@ function node_http_get1(key, value, apikey, url){
 		// Build-in https module. (still testing.)
 
 		// POST
-		{ "f": node_fetch_post1, "k":"node_fetch_post" , "v":"POST: node-fetch Node v16"    , "a":active_apikey, "u":urlHttp },
+		// { "f": node_fetch_post1, "k":"node_fetch_post" , "v":"POST: node-fetch Node v16"    , "a":active_apikey, "u":urlHttp },
 		{ "f": node_http_post1 , "k":"node_http_post1" , "v":"POST: http-built-in Node v16" , "a":active_apikey, "u":urlHttp },
-		// { "f": node_https_post1, "k":"node_https_post1", "v":"POST: https-built-in Node v16", "a":active_apikey, "u":urlHttp },
+		{ "f": node_https_post1, "k":"node_https_post1", "v":"POST: https-built-in Node v16", "a":active_apikey, "u":urlHttps },
 
 		// GET
 		// { "f": node_fetch_get1 , "k":"node_fetch_get"  , "v":"GET : node-fetch Node v16"    , "a":active_apikey, "u":urlHttp },

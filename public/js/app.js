@@ -165,7 +165,7 @@ _APP.logs = {
 			let button1 = document.createElement("div");
 			button1.innerText = "Remove";
 			button1.classList.add("actionButton1");
-			button1.addEventListener("click", function(){ _APP.logs.removeOne(obj.rec.tid); }, false);
+			button1.addEventListener("click", function(){ _APP.logs.removeOne(obj.rec.tid, obj.table); }, false);
 			
 			// Create log button.
 			let button2 = document.createElement("div");
@@ -196,7 +196,7 @@ _APP.logs = {
 					{ "k":"line"    , "l":"LINE    :", },
 					{ "k":"method"  , "l":"METHOD  :", },
 					{ "k":"user"    , "l":"USER    :", },
-					{ "k":"apikey"  , "l":"APIKEY  :", },
+					// { "k":"apikey"  , "l":"APIKEY  :", },
 				];
 				data.forEach(function(data_rec){
 					// Break out the values.
@@ -302,12 +302,33 @@ _APP.logs = {
 			resolve(resp);
 		});
 	},
-	removeOne: function(tid){
+	removeOne: function(tid, table){
 		return new Promise(async function(resolve,reject){
 			let obj = {
 				"o":"removeOne",
 				"key":_APP.auth.apikey,
 				"tid": tid,
+			};
+			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+
+			if(table){
+				// Only remove the entry, don't refresh the list.
+				table.remove();
+			}
+			else{
+				// Refresh the list.
+				let data = await _APP.logs.getAll();
+				_APP.logs.createTableRecs(data);
+			}
+
+			resolve(resp);
+		});
+	},
+	removeAll: function(){
+		return new Promise(async function(resolve,reject){
+			let obj = {
+				"o":"removeAll",
+				"key":_APP.auth.apikey,
 			};
 			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
 
@@ -317,8 +338,139 @@ _APP.logs = {
 			resolve(resp);
 		});
 	},
-	removeAll: function(){},
 	sendToConsole: function(){},
+};
+_APP.examples = {
+	selectText : function(elem){
+		window.getSelection().selectAllChildren(elem);
+	},
+	fixPhpExamples     : function(){
+		// Get handle to the example content div.
+		let exampleDiv = document.querySelector("#example_php .example_content");
+		exampleDiv.addEventListener("dblclick", function(){ _APP.examples.selectText(exampleDiv); }, false);
+
+		// For PHP we will be changing the last line.
+		let lines = exampleDiv.innerText.split("\n").filter(d=> d.trim() != "");
+		let lastLine = lines.pop();
+
+		// Create replacements for "URL" and "APIKEY"
+		let urlSpan    = document.createElement("span"); 
+		urlSpan.classList.add("example_url");
+		urlSpan.innerText = window.location.origin + window.location.pathname.replace("app.php", "gateway_p.php");
+
+		let apikeySpan = document.createElement("span"); 
+		apikeySpan.classList.add("example_key");
+		apikeySpan.innerText = _APP.auth.apikey;
+
+		// Replace the placeholders with the current values.
+		lastLine = lastLine
+		.replace("URL", urlSpan.outerHTML)
+		.replace("APIKEY", apikeySpan.outerHTML)
+		;
+
+		// Add the line back.
+		lines.push(lastLine);
+
+		// Replace the div content.
+		exampleDiv.innerHTML = lines.join("\n");
+	},
+	fixNodeExamples    : function(){
+		// Get handle to the example content div.
+		let exampleDiv = document.querySelector("#example_node .example_content");
+		exampleDiv.addEventListener("dblclick", function(){ _APP.examples.selectText(exampleDiv); }, false);
+
+		// For NODE we do a global string replace.
+		let lines = exampleDiv.innerText.split("\n").filter(d=> d.trim() != "").join("\n");
+
+		// Create replacements for "URL" and "APIKEY"
+		let protocolSpan    = document.createElement("span"); 
+		protocolSpan.classList.add("example_protocol");
+		protocolSpan.innerText = window.location.protocol.replace(/[^A-Za-z]/g, "") == "https" ? true : false;
+
+		let hostnameSpan    = document.createElement("span"); 
+		hostnameSpan.classList.add("example_url");
+		hostnameSpan.innerText = window.location.host;
+
+		let pathSpan    = document.createElement("span"); 
+		pathSpan.classList.add("example_url");
+		pathSpan.innerText = window.location.pathname.replace("app.php", "gateway_p.php");
+
+		let apikeySpan = document.createElement("span"); 
+		apikeySpan.classList.add("example_key");
+		apikeySpan.innerText = _APP.auth.apikey;
+
+		// Replace the placeholders with the current values.
+		lines = lines
+		.replace("__HTTP__"    , protocolSpan.outerHTML)
+		.replace("__HOSTNAME__", hostnameSpan.outerHTML)
+		.replace("__PATH__"    , pathSpan.outerHTML)
+		.replace("__APIKEY__"  , apikeySpan.outerHTML)
+		;
+
+		// Replace the div content.
+		exampleDiv.innerHTML = lines;
+
+	},
+	fixJsFetchExamples: function(){
+		// Get handle to the example content div.
+		let exampleDiv = document.querySelector("#example_js_fetch .example_content");
+		exampleDiv.addEventListener("dblclick", function(){ _APP.examples.selectText(exampleDiv); }, false);
+		exampleDiv.addEventListener("dblclick", function(){ _APP.examples.selectText(exampleDiv); }, false);
+
+		// For JS FETCH we do a global string replace.
+		let lines = exampleDiv.innerText.split("\n").filter(d=> d.trim() != "").join("\n");
+
+		// Create replacements for "URL" and "APIKEY"
+		let urlSpan    = document.createElement("span"); 
+		urlSpan.classList.add("example_url");
+		urlSpan.innerText = window.location.origin + window.location.pathname.replace("app.php", "gateway_p.php");
+
+		let apikeySpan = document.createElement("span"); 
+		apikeySpan.classList.add("example_key");
+		apikeySpan.innerText = _APP.auth.apikey;
+
+		// Replace the placeholders with the current values.
+		lines = lines
+		.replace("__URL__"   , urlSpan.outerHTML)
+		.replace("__APIKEY__", apikeySpan.outerHTML)
+		;
+
+		// Replace the div content.
+		exampleDiv.innerHTML = lines;
+	},
+	fixBashCurlExamples: function(){
+		// Get handle to the example content div.
+		let exampleDiv = document.querySelector("#example_bash_curl .example_content");
+		exampleDiv.addEventListener("dblclick", function(){ _APP.examples.selectText(exampleDiv); }, false);
+
+		// For BASH_CURL we do a global string replace.
+		let lines = exampleDiv.innerText.split("\n").filter(d=> d.trim() != "").join("\n");
+
+		// Create replacements for "URL" and "APIKEY"
+		let urlSpan    = document.createElement("span"); 
+		urlSpan.classList.add("example_url");
+		urlSpan.innerText = window.location.origin + window.location.pathname.replace("app.php", "gateway_p.php");
+
+		let apikeySpan = document.createElement("span"); 
+		apikeySpan.classList.add("example_key");
+		apikeySpan.innerText = _APP.auth.apikey;
+
+		// Replace the placeholders with the current values.
+		lines = lines
+		.replace("$B_URL", urlSpan.outerHTML)
+		.replace("$B_KEY", apikeySpan.outerHTML)
+		;
+
+		// Replace the div content.
+		exampleDiv.innerHTML = lines;
+	},
+	fixExamples: function(){
+		_APP.examples.fixPhpExamples();
+		_APP.examples.fixNodeExamples();
+		_APP.examples.fixBashCurlExamples();
+		_APP.examples.fixJsFetchExamples();
+	}
+
 };
 window.onload = async function(){
 	window.onload = null;
@@ -339,4 +491,7 @@ window.onload = async function(){
 
 	let data = await _APP.logs.getAll();
 	_APP.logs.createTableRecs(data);
+
+	_APP.examples.fixExamples();
+	
 };

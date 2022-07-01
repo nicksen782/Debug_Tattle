@@ -31,7 +31,8 @@ function curl_http() {
 		}
 	}'
 
-	curl -d "$JSON" -H 'Content-Type: application/json' -X POST "$B_urlHttp"
+	RESULTS=$(curl --silent -d "$JSON" -H 'Content-Type: application/json' -X POST "$B_urlHttp")
+	echo $RESULTS
 }
 function curl_https() {
 	B_LINENO=${LINENO}
@@ -47,11 +48,12 @@ function curl_https() {
 		}
 	}'
 
-	curl -d "$JSON" -H 'Content-Type: application/json' -X POST "$B_urlHttps"
+	RESULTS=$(curl --silent -d "$JSON" -H 'Content-Type: application/json' -X POST "$B_urlHttps")
+	echo $RESULTS
 }
-curl_http
+
+echo $(curl_http)
 echo
-curl_https
+echo $(curl_https)
 echo
 
-echo

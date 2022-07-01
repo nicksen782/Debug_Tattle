@@ -462,11 +462,31 @@ function logs_removeAll(){
 	global $dbFile;
 	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
+	// Clear the table.
 	$sql = "DELETE FROM tattles;";
 	$prep = $dbHandle->prepare( $sql );
 	$exec = $dbHandle->execute();
 
-	echo json_encode("Removed all");
+	// Reset the sqlite_sequence.
+	$dbHandle->reset_sqlite_sequence($dbFile, "tattles");
+	
+	// Vacuumb.
+	$dbHandle->vacuum($dbFile);
+	
+	// Write a message to the tattle table.
+	$_message = [
+		"origin" => [ "FILE" =>  __FILE__ , "LINE" =>  __LINE__ , "FUNCTION" => __FUNCTION__ ],
+		"data"   => [ 
+			'logs_removeAll' => "ALL logs cleared!" ,
+		]
+	];
+	logs_addOne($_message, true);
+
+	$stats = [];
+	$stats['error'] = false;
+	$stats['errors'] = [];
+	$stats['results'] = "Removed all";
+	echo json_encode($stats);
 }
 
 // *****
@@ -559,12 +579,21 @@ function logs_addOne($message, $silent){
 	if(!$silent){
 		$lastId = $dbHandle->lastInsertId();
 		$sql_error = $dbHandle->errorInfo();
-		if($sql_error[2]) { echo json_encode( $dbHandle->errorInfo() ); }
-		if(!$lastId){
+
+		$stats = [];
+		$stats['error'] = false;
+		$stats['errors'] = [];
+		$stats['results'] = "";
+		// $stats['message'] = $message;
+		
+		if($sql_error[2]) { 
+			$stats['error'] = true;
+			array_push($stats['errors'], $dbHandle->errorInfo());
 		}
 		else{
-			echo json_encode( "Added tid: " . $lastId );
+			$stats['results'] = "Added tid: " . $lastId;
 		}
+		echo json_encode( $stats );
 	}
 }
 function logs_removeOne($tid){

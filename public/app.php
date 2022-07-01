@@ -27,6 +27,7 @@
 
 	<!-- include the stylesheet file -->
 	<link href="css/app.css" rel="stylesheet" type="text/css">
+	<link href="css/examples.css" rel="stylesheet" type="text/css">
 
 	<script src="js/app.js"></script>
 </head>
@@ -34,7 +35,9 @@
 	Welcome
 	<div id="title">title</div>
 	<div id="nav">nav</div>
-	<div id="examples">examples</div>
+	<div id="examples">
+		<?php include "partials/examples.php"; ?>
+	</div>
 	<div id="records">
 		<div id="records_div">
 

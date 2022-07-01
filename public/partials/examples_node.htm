@@ -1,0 +1,52 @@
+// NODE http/https built-in module.
+let _stats = (function(){ 
+	let e = new Error(); let frame = e.stack.split("\n")[2].trim(); 
+	let o = { "fName":frame.split("at ")[1].split(" ")[0], "lNum":frame.split(":").reverse()[1] };
+	if(o.fName.indexOf(".") != -1){ o.fName = o.fName.substring(o.fName.indexOf(".")+1); }
+	return o; 
+})();
+
+try{ 
+	let args = [__HTTP__, "__HOSTNAME__", "__PATH__", "__APIKEY__"];
+	(function(https, o_hostname, o_path, apikey){
+		let http;
+		let port;
+		if(https){ http = require('https'); port = 443; }
+		else     { http = require('http');  port = 80;  }
+		 
+		let _data = {
+			"origin" : { "FILE": __filename , "LINE": _stats.lNum , "FUNCTION" : _stats.fName },
+			"data"   : { 
+				"NAMED_KEY" : "DESIRED_VALUE"
+			}
+		};
+
+		const options = { 
+			method   : 'POST', 
+			hostname : o_hostname, 
+			path     : o_path,
+			port     : port,
+			//headers  : { "Content-Type":'application/x-www-form-urlencoded' },
+			headers  : { "Content-Type":'application/json' },
+		};
+
+		const req = http.request(options, (res) => {
+			let d = '';
+			res.on('data', (c)=>{d+=c;}); 
+			res.on('end', ()=>{
+				try     { console.log("JSON:", JSON.parse(d)); }
+				catch(e){ console.log("TEXT:", d);             }
+				// resolve(d);
+				<!-- console.log("DONE:", d); -->
+			});
+		})
+		.on("error", (err) => { 
+			console.log("err:", err);
+			// reject(err); 
+		});
+		req.write( JSON.stringify( {o:'add', key:apikey, data:(_data)} ) );
+		req.end();
+	})
+	(...args);
+} 
+catch(e){ console.log("ERROR:", e); }

@@ -1,0 +1,30 @@
+let _stats = (function testtest(){ 
+	let e = new Error(); let frame = e.stack.split("\n")[2].trim(); 
+	let o = { "fName":frame.split("at ")[1].split(" ")[0], "lNum":frame.split(":").reverse()[1] };
+	if(o.fName.indexOf(".") != -1){ o.fName = o.fName.substring(o.fName.indexOf(".")+1); }
+	return o; 
+})();
+let _data = {
+	"o"   : "add", "key" : "__APIKEY__",
+	"data" : {
+		"origin" : { "FILE": "UNAVAILABLE_IN_JAVASCRIPT" , "LINE": _stats.lNum , "FUNCTION" : _stats.fName },
+		"data"   : { 
+			"NAMED_KEY" : "DESIRED_VALUE"
+		}
+	}
+};
+let resp;
+resp = fetch("__URL__" , 
+	{
+		method: 'POST',
+		headers: {
+			'Accept'          : 'application/json',
+			"Accept-Encoding" : 'gzip;q=0,deflate;q=0',
+			//'Content-Type'    : 'application/json', // Works.
+			// 'Content-Type'    : 'application/x-www-form-urlencoded', // Does not work.
+			 'Content-Type'    : 'multipart/form-data', // works.
+			// "Content-Encoding": 'gzip',
+		},
+		body: JSON.stringify(_data)
+	}
+);

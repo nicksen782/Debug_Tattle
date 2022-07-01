@@ -101,7 +101,7 @@ class sqlite3_DB_PDO{
 	public function endTransaction()    { return $this->dbh      -> commit();           }
 	public function cancelTransaction() { return $this->dbh      -> rollBack();         }
 	public function errorInfo()         { return $this->statement-> errorInfo();        }
-	public function vacuum($dbFile)            { 
+	public function vacuum($dbFile) { 
 		$dbHandle = new sqlite3_DB_PDO( $dbFile ) or exit("cannot open the database");
 
 		// SQL.
@@ -109,6 +109,23 @@ class sqlite3_DB_PDO{
 
 		// Prepare.
 		$prep = $dbHandle->prepare($sql);
+
+		// Execute.
+		$exec = $dbHandle->execute();
+
+		// Get data.
+
+		// Return.
+	}
+	public function reset_sqlite_sequence($dbFile, $tableName) { 
+		$dbHandle = new sqlite3_DB_PDO( $dbFile ) or exit("cannot open the database");
+
+		// SQL.
+		$sql = "delete from sqlite_sequence where name=:tableName;";
+
+		// Prepare.
+		$prep = $dbHandle->prepare($sql);
+		$dbHandle->bind(':tableName'     , $tableName );
 
 		// Execute.
 		$exec = $dbHandle->execute();

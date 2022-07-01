@@ -1,0 +1,12 @@
+#!/bin/bash
+JSON='
+{
+	"o"   : "add", "key" : "$B_KEY",
+	"data": {
+		"origin": { "FILE": "'"$(basename "$0")"'", "LINE": "'"${LINENO}"'", "FUNCTION": "'"${FUNCNAME[0]}"'" },
+		"data"  : {
+			"NAMED_KEY": "DESIRED_VALUE" 
+		}
+	}
+}'
+RESULTS=$(curl --silent -X POST "$B_URL" -H 'Content-Type: application/json' -d "$JSON")

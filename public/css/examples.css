@@ -1,0 +1,37 @@
+#examples{
+	border: 1px solid black;
+}
+.example{
+	border: 1px solid black;
+}
+.example_title{
+	border: 1px solid black;
+}
+.example_content{
+    background-color: blanchedalmond;
+    white-space: pre;
+    font-family: monospace;
+    border-radius: 0px 5px 5px 5px;
+    border: 1px solid black;
+    padding: 5px;
+    /* transition: all 0.25s; */
+    /* max-height: 1px; */
+    /* overflow: hidden; */
+	tab-size: 2;
+    overflow: auto;
+}
+.example_url{
+	background-color: burlywood;
+    border: 1px solid red;
+    font-style: italic;
+}
+.example_key{
+	background-color: burlywood;
+    border: 1px solid red;
+    font-style: italic;
+}
+.example_protocol{
+	background-color: burlywood;
+    border: 1px solid red;
+    font-style: italic;
+}
