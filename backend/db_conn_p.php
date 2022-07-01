@@ -100,6 +100,7 @@ class sqlite3_DB_PDO{
 	public function beginTransaction()  { return $this->dbh      -> beginTransaction(); }
 	public function endTransaction()    { return $this->dbh      -> commit();           }
 	public function cancelTransaction() { return $this->dbh      -> rollBack();         }
+	public function errorInfo()         { return $this->statement-> errorInfo();        }
 	public function vacuum($dbFile)            { 
 		$dbHandle = new sqlite3_DB_PDO( $dbFile ) or exit("cannot open the database");
 

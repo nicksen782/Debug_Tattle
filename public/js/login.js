@@ -1,9 +1,3 @@
-const getCookieValue = (name) => (
-	document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || ''
-);
-const deleteCookie = (name) => {
-	document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`;
-};
 let login = {
 	// Used for GET requests expecting JSON.. 
 	json_get            : async function(url){
@@ -97,6 +91,17 @@ let login = {
 		});
 	},
 
+	cookies: {
+		// Get the value of a cookie via it's name.
+		getCookieValue : function(name) {
+			return decodeURI(document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '') ;
+		},
+		// Remove a cookie via it's name.
+		deleteCookie : function(name) {
+			return document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`;
+		},
+	},
+
 	// Get url params
 	getUrlParams                     : function(){
 		const urlSearchParams = new URLSearchParams(window.location.search);
@@ -107,13 +112,14 @@ let login = {
 	// These come from the server.
 	responseLookups : {
 		// Example:
-		"ERROR_LOGIN_BAD_KEY"  : "Invalid API key!"           , // Used by the server.
-		"ERROR_LOGIN_DISABLED" : "This user is DISABLED."     , // Used by the server.
-		"ERROR_LOGIN_NO_AUTH"  : "Authentication is required.",
-		"MSG_LOGIN_LOGOUT"    : "You are now logged out."    ,
-		// "ERROR_UNKNOWN_API"    : "ERROR_UNKNOWN_API"          ,
-		// "ERROR_UNAUTHORIZED"   : "ERROR_UNAUTHORIZED"         ,
-		// "ERROR_INVALID_METHOD" : "ERROR_INVALID_METHOD"       ,
+		"ERROR_LOGIN_BAD_USERNAME" : "Invalid username."          , // Used by the server.
+		"ERROR_LOGIN_BAD_KEY"      : "Invalid API key!"           , // Used by the server.
+		"ERROR_LOGIN_DISABLED"     : "This user is DISABLED."     , // Used by the server.
+		"ERROR_LOGIN_NO_AUTH"      : "Authentication is required.",
+		"MSG_LOGIN_LOGOUT"         : "You are now logged out."    ,
+		"ERROR_UNKNOWN_API"        : "ERROR_UNKNOWN_API"          ,
+		"ERROR_UNAUTHORIZED"       : "ERROR_UNAUTHORIZED"         ,
+		"ERROR_INVALID_METHOD"     : "ERROR_INVALID_METHOD"       ,
 	},
 
 	// Get the login status and the responseLookups from the server.
@@ -121,12 +127,18 @@ let login = {
 		return new Promise(async function(resolve,reject){
 			// Get the login status by checking the cookie.
 			let getLoginStatus = async function(){
-				let cookie = getCookieValue("debug_tattleV6_apikey");
+				let cookie_username = login.cookies.getCookieValue("debug_tattleV6_username");
+				let cookie_cookie   = login.cookies.getCookieValue("debug_tattleV6_apikey");
+
+				// console.log("cookie_username:", cookie_username);
+				// console.log("cookie_cookie  :", cookie_cookie);
 				
 				// console.log("cookie:", cookie);
-				if(cookie){ 
+				if(cookie_username && cookie_cookie){ 
 					// console.log("has cookie");
-					document.getElementById("key").value = cookie;
+					document.getElementById("username").value = cookie_username ;
+					document.getElementById("key")     .value = cookie_cookie   ;
+					// console.log(cookie_cookie);
 
 					// If logged in then display some login data.
 					let loginStatusDiv = document.getElementById("loginStatus");
@@ -138,8 +150,9 @@ let login = {
 					return true; 
 				} 
 				else { 
-					// console.log("no cookie");
-					document.getElementById("key").value = cookie;
+					// console.log("no cookie_cookie");
+					document.getElementById("username").value = ""; // cookie_username;
+					document.getElementById("key")     .value = ""; // cookie_cookie;
 					// resolve(false);
 					return false 
 				};
@@ -175,7 +188,7 @@ let login = {
 
 				let logoutButton = document.getElementById("logout");
 				logoutButton.addEventListener("click", async function(e){
-					deleteCookie("debug_tattleV6_apikey");
+					login.cookies.deleteCookie("debug_tattleV6_apikey");
 					window.location.href = window.location.origin + window.location.pathname + `?msg=MSG_LOGIN_LOGOUT`;
 					// window.location.reload();
 				});

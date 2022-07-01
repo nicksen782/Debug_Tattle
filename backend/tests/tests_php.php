@@ -7,7 +7,8 @@ include "backend/db_conn_p.php";
 
 // Global.
 $configFile = json_decode(file_get_contents( "backend/tests/config.json" ), true) ;
-$urlHttp = $configFile['urlHttp']; 
+$urlHttp  = "http://"  . $configFile['hostname'] . $configFile['path']; 
+$urlHttps = "https://" . $configFile['hostname'] . $configFile['path']; 
 $active_apikey = $configFile['apikey']; 
 $dbFile = "backend/db/tattle6.db";
 unlink($dbFile);
@@ -65,7 +66,8 @@ function php_fgc_post1($key, $value, $apikey, $url){
 				'data' => array(
 					"origin" => array( "FILE" =>  __FILE__ , "LINE" =>  __LINE__ , "FUNCTION" => __FUNCTION__ ),
 					"data"   => array(
-						$key => $value
+						$key => $value,
+						// '$_SERVER' => $_SERVER
 					)
 				)
 			)
@@ -94,6 +96,7 @@ function php_fgc_post2($key, $value, $apikey, $url){
 					"origin" => [ "FILE" =>  __FILE__ , "LINE" =>  __LINE__ , "FUNCTION" => __FUNCTION__ ],
 					"data"   => [
 						$key => $value,
+						// '$_SERVER' => $_SERVER
 					]
 				]
 			]
@@ -135,8 +138,8 @@ function tester($tests){
 	}
 };
 tester([
-	[ "f"=> "php_fgc_get1" , "k"=>"php_fgc_get1" , "v"=>"GET : FGC PHP 5.3.3", "a"=>$active_apikey, "u"=>$urlHttp],
-	[ "f"=> "php_fgc_get2" , "k"=>"php_fgc_get2" , "v"=>"GET : FGC PHP 7+"   , "a"=>$active_apikey, "u"=>$urlHttp],
+	// [ "f"=> "php_fgc_get1" , "k"=>"php_fgc_get1" , "v"=>"GET : FGC PHP 5.3.3", "a"=>$active_apikey, "u"=>$urlHttp],
+	// [ "f"=> "php_fgc_get2" , "k"=>"php_fgc_get2" , "v"=>"GET : FGC PHP 7+"   , "a"=>$active_apikey, "u"=>$urlHttp],
 	[ "f"=> "php_fgc_post1", "k"=>"php_fgc_post1", "v"=>"POST: FGC PHP 5.3.3", "a"=>$active_apikey, "u"=>$urlHttp],
 	[ "f"=> "php_fgc_post2", "k"=>"php_fgc_post2", "v"=>"POST: FGC PHP 7+"   , "a"=>$active_apikey, "u"=>$urlHttp],
 ]);

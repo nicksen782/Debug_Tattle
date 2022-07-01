@@ -26,15 +26,15 @@
 		<form action="login_p.php" method="post" id="loginForm">
 			<input type="hidden" name="o" value="login" placeholder="" id="o" required>
 			
-			<!-- <label for="username"> -->
-				<!-- <i class="mdi mdi-account"></i> -->
-			<!-- </label> -->
-			<!-- <input type="text" name="username" placeholder="Username" id="username" required> -->
+			<label for="username">
+				<i class="mdi mdi-account"></i>
+			</label>
+			<input type="text" name="username" placeholder="Username" id="username" required>
 
 			<label for="password">
 				<i class="mdi mdi-lock"></i>
 			</label>
-			<input type="password" name="key" placeholder="" id="key" required>
+			<input type="password" name="key" placeholder="Password" id="key" required>
 			
 			<!-- <input type="submit" id="submit" value="Login"> -->
 			<input type="button" id="submit" value="Login">

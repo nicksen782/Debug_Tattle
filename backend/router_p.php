@@ -96,9 +96,10 @@ function API_REQUEST($o, $data){
 		$stats["error_key"] = "ERROR_LOGIN_DISABLED";
 		array_push($stats['errors'], "THIS USER IS DISABLED.");
 
-		// Remove the cookie.
-		$cookie_name = "debug_tattleV6_apikey";
-		$cookie_value = "";
+		// Remove the cookies.
+		$cookie_name = "debug_tattleV6_apikey"; $cookie_value = "";
+		setcookie($cookie_name, $cookie_value, time() - (86400 * 1));
+		$cookie_name = "debug_tattleV6_username"; $cookie_value = "";
 		setcookie($cookie_name, $cookie_value, time() - (86400 * 1));
 
 		$_message = [
@@ -196,15 +197,22 @@ function inputJsonToPost(){
 	}
 }
 // Used at the login page.
-function login($apikey){
+function login($username, $apikey){
 	$stats = [];
 	$stats['error'] = false;
 	$stats['canLogin'] = true;
 	$stats['errors'] = [];
 	
 	// Check if the apikey is valid. 
+	$valid_user   = check_user($username);
 	$valid_apikey = check_apikey($apikey, false);
-	if(!$valid_apikey){
+	if(!$valid_user){
+		$stats['error'] = true;
+		$stats["error_key"] = "ERROR_LOGIN_BAD_USERNAME";
+		$stats['canLogin'] = false;
+		return $stats;
+	}
+	else if(!$valid_apikey){
 		$stats['error'] = true;
 		$stats["error_key"] = "ERROR_LOGIN_BAD_KEY";
 		$stats['canLogin'] = false;
@@ -236,18 +244,31 @@ function validateClient(){
 	// echo $url;
 
 	// Check for the cookie apikey.
-	$apikey = $_COOKIE['debug_tattleV6_apikey'];
-	if(!$apikey){
+	$username = $_COOKIE['debug_tattleV6_username'];
+	$apikey   = $_COOKIE['debug_tattleV6_apikey'];
+	if(!$username){
+		// Redirect to the login screen with message if the cookie is not present.
+		header("Location: $url?msg=ERROR_LOGIN_NO_AUTH", true, 302); // 302 Found
+		exit();
+	}
+	else if(!$apikey){
 		// Redirect to the login screen with message if the cookie is not present.
 		header("Location: $url?msg=ERROR_LOGIN_NO_AUTH", true, 302); // 302 Found
 		exit();
 	}
 	// Check if the apikey is valid and the apikey is not disabled.
 	else{
-		$results = check_apikey($apikey, false);
+		$valid_user   = check_user($username);
+		$valid_apikey = check_apikey($apikey, false);
 		
+		// Check if the username is valid. 
+		if(!$valid_user){
+			// Redirect to the login screen with message if the username is not valid.
+			header("Location: $url?msg=ERROR_LOGIN_BAD_USERNAME", true, 302); // 302 Found
+			exit();
+		}
 		// Check if the apikey is valid. 
-		if(!$results){
+		else if(!$valid_apikey){
 			// Redirect to the login screen with message if the api key is not valid.
 			header("Location: $url?msg=ERROR_LOGIN_BAD_KEY", true, 302); // 302 Found
 			exit();
@@ -267,6 +288,8 @@ function validateClient(){
 			}
 		}
 	}
+
+	return $apikey;
 }
 // Returns the rights held by the specified apikey.
 function get_rights($apikey){
@@ -334,6 +357,43 @@ function check_rights($actualRights, $requiredRights){
 	// Nope.
 	return false;
 }
+
+// Queries the database to determine if the username used is valid.
+function check_user($username){
+	// Usernames are NOT case-sensitive in this search.
+	
+	// Bring in DB object
+	global $dbFile;
+	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
+
+	// Get the SQL.
+	$sql = "SELECT name FROM users WHERE lower(name) = :name LIMIT 1;";
+	
+	// Prepare.
+	$prep = $dbHandle->prepare( $sql );
+	$dbHandle->bind(':name', strtolower($username));
+	
+	// Execute.
+	$exec = $dbHandle->execute();
+
+	$name = $dbHandle->statement->fetch(PDO::FETCH_COLUMN);
+	$valid = $name && count($name) ? true : false;
+
+	// Set the cookie if the check is valid.
+	if($valid){
+		$cookie_name = "debug_tattleV6_username";
+		$cookie_value = $name;
+		setcookie($cookie_name, $cookie_value, time() + (86400 * 1));
+	}
+	// Remove the cookie if the check is invalid.
+	else{
+		$cookie_name = "debug_tattleV6_username";
+		$cookie_value = "";
+		setcookie($cookie_name, $cookie_value, time() - (86400 * 1));
+	}
+
+	return $valid; 
+}
 // Queries the database to determine if the key used is a valid key.
 function check_apikey($apikey, $outputAsJson){
 	// Bring in DB object
@@ -388,7 +448,7 @@ function logs_getAll(){
 	global $dbFile;
 	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
-	$sql = "SELECT * FROM tattles;";
+	$sql = "SELECT * FROM tattles ORDER BY tid DESC;";
 	$prep = $dbHandle->prepare( $sql );
 	$exec = $dbHandle->execute();
 
@@ -456,7 +516,7 @@ function logs_addOne($message, $silent){
 	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
 	// Handle potential data issues. (ex: GET via NODE http module.)
-	$errors = null;
+	$errors = [];
 	$parentKeys = count(array_keys($message));
 	$dataKeys   = count(array_keys($message['data']));
 	$dataIsSet  = isset($message['data']);
@@ -466,7 +526,8 @@ function logs_addOne($message, $silent){
 		if($jsonError === JSON_ERROR_NONE){ 
 			$errors = [
 				"!_M1_!"=>"JSON REPAIRED",
-				"!_M2_!"=>$reqMethod
+				"!_M2_!"=>$reqMethod,
+				// "!_M3_!"=>json_encode($message),
 			];
 			$message = $decoded; 
 		}
@@ -486,17 +547,24 @@ function logs_addOne($message, $silent){
 	$dbHandle->bind(':file'    , $message['origin']["FILE"]     );
 	$dbHandle->bind(':line'    , $message['origin']["LINE"]     );
 	$dbHandle->bind(':function', $message['origin']["FUNCTION"] );
-	$dbHandle->bind(':method'  , $reqMethod              );
+	$dbHandle->bind(':method'  , $reqMethod .'/'. strtoupper($_SERVER['REQUEST_SCHEME']) );
 	$dbHandle->bind(':ip'      , $_SERVER['REMOTE_ADDR'] );
 	$dbHandle->bind(':user'    , $name                   );
 	$dbHandle->bind(':apikey'  , $active_apikey          );
-	$dbHandle->bind(':data'    , json_encode($message["data"]) );
-	$dbHandle->bind(':errors'  , json_encode($errors) );
+	$dbHandle->bind(':data'    , json_encode($message["data"] ? $message["data"] : "") );
+	$dbHandle->bind(':errors'  , json_encode($errors          ? $errors          : "") );
 
 	$exec = $dbHandle->execute();
 
 	if(!$silent){
-		echo json_encode( "Added tid: " . $dbHandle->lastInsertId() );
+		$lastId = $dbHandle->lastInsertId();
+		$sql_error = $dbHandle->errorInfo();
+		if($sql_error[2]) { echo json_encode( $dbHandle->errorInfo() ); }
+		if(!$lastId){
+		}
+		else{
+			echo json_encode( "Added tid: " . $lastId );
+		}
 	}
 }
 function logs_removeOne($tid){

@@ -1,8 +1,8 @@
 // const fetch   = import('node-fetch');
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync("config.json", 'utf8'));
-const urlHttp       = config.urlHttp;
-const urlHttps      = config.urlHttps;
+const urlHttp       = "http://"  + config.hostname + config.path;
+const urlHttps      = "https://" + config.hostname + config.path;
 const active_apikey = config.apikey;
 
 async function node_fetch_post1(key, value, apikey, url){
@@ -16,14 +16,13 @@ async function node_fetch_post1(key, value, apikey, url){
 		const _fetch = require('node-fetch');
 		let _data = {
 			"origin": { "FILE": __filename , "LINE": _stats.lNum , "FUNCTION" : _stats.fName },
-			"data"   : { [key] : value }
+			"data"  : { [key] : value }
 		};
 		let fetch_url = `${url}?o=add&key=${apikey}`;
 		let options = {
 			"method": "POST", 
-			// "headers": { 'Content-Type': 'application/x-www-form-urlencoded' },
 			"headers": { 'Content-Type': 'application/json' },
-			"body": JSON.stringify( {o:'add', key:apikey, data:JSON.stringify(_data) } )
+			"body": JSON.stringify( {o:'add', key:apikey, data:_data } )
 		};
 		try{ _fetch(fetch_url, options); resolve(); } catch(e){ reject(e); }
 	});
@@ -44,8 +43,10 @@ function node_http_post1(key, value, apikey, url){
 		let body = JSON.stringify( {o:'add', key:apikey, data:(_data)} );
 		const options = { 
 			method:'POST', 
-			hostname:'', 
-			path:`${url}`,
+			hostname:'192.168.2.55', 
+			path:`${"/Debug_Tattle/backend/router_p.php"}`,
+			// hostname:'', 
+			// path:`${url}`,
 			// "headers"  : { "Content-Type":'application/x-www-form-urlencoded' }
 			"headers"  : { "Content-Type":'application/json' }
 		};
@@ -63,6 +64,7 @@ function node_http_post1(key, value, apikey, url){
 		req.end();
 	});
 }
+
 function node_https_post1(key, value, apikey, url){
 	let _stats = (function(){ 
 		let e = new Error(); let frame = e.stack.split("\n")[2].trim(); 
@@ -100,7 +102,6 @@ function node_https_post1(key, value, apikey, url){
 		req.end();
 	});
 }
-
 async function node_fetch_get1(key, value, apikey, url){
 	let _stats = (function(){ 
 		let e = new Error(); let frame = e.stack.split("\n")[2].trim(); 
@@ -115,6 +116,7 @@ async function node_fetch_get1(key, value, apikey, url){
 			"data"   : { [key] : value }
 		};
 		let fetch_url = `${url}?o=add&key=${apikey}&data=${JSON.stringify(_data)}`;
+		// let fetch_url = `${url}?o=add&key=${apikey}&data=${encodeURIComponent(JSON.stringify(_data))}`;
 		let options = {
 			"method": "GET", 
 			// "headers": { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -205,8 +207,8 @@ function node_http_get1(key, value, apikey, url){
 		// { "f": node_https_post1, "k":"node_https_post1", "v":"POST: https-built-in Node v16", "a":active_apikey, "u":urlHttp },
 
 		// GET
-		{ "f": node_fetch_get1 , "k":"node_fetch_get"  , "v":"GET : node-fetch Node v16"    , "a":active_apikey, "u":urlHttp },
-		{ "f": node_http_get1  , "k":"node_http_get1"  , "v":"GET : http-built-in Node v16" , "a":active_apikey, "u":urlHttp },
+		// { "f": node_fetch_get1 , "k":"node_fetch_get"  , "v":"GET : node-fetch Node v16"    , "a":active_apikey, "u":urlHttp },
+		// { "f": node_http_get1  , "k":"node_http_get1"  , "v":"GET : http-built-in Node v16" , "a":active_apikey, "u":urlHttp },
 		// { "f": node_https_get1 , "k":"node_https_get1" , "v":"GET : https-built-in Node v16", "a":active_apikey, "u":urlHttps },
 	];
 	for(let i=0; i<tests.length; i+=1){

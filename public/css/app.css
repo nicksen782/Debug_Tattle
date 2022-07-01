@@ -1,0 +1,168 @@
+* {
+	box-sizing: border-box;
+}
+
+#records {
+	border: 1px solid black;
+}
+
+.record_table {
+	border: 1px solid blue;
+	margin-bottom: 5px;
+	border-collapse: collapse;
+}
+
+.leftColumn {
+}
+
+.rightColumn {
+}
+
+.record_table td {
+	vertical-align: top;
+}
+
+.record_table .metadata th {
+	text-align: left;
+}
+
+.record_table caption {
+	border: 1px solid green;
+	text-align: left;
+	position: relative;
+	min-height: 20px;
+}
+
+.record_table tr th {
+}
+
+.borderBottom {
+	border-bottom: 1px solid black;
+}
+
+.borderRight {
+	border-right: 1px solid black;
+}
+
+.log_data {
+	font-family: monospace;
+	width: 760px;
+	max-width: 760px;
+}
+
+.log_data .logs .log_filename {
+	border-bottom: 1px solid black;
+}
+
+.logTh {
+	position: relative;
+}
+
+.log_data .errors .title {
+	position: relative;
+	min-height: 30px;
+	text-align: center;
+	font-weight: bold;
+	line-height: 32px;
+	font-size: 18px;
+	border-bottom: 1px solid black;
+}
+
+.log_data .logs .content {
+	white-space: pre-wrap;
+	font-family: monospace;
+	padding: 5px;
+	/* width: 760px; */
+	/* max-width: 760px; */
+	overflow-wrap: break-word;
+}
+
+.log_data .errors .content {
+	white-space: pre-line;
+	font-family: monospace;
+	border-bottom: 1px solid black;
+	padding: 5px;
+	overflow-wrap: break-word;
+}
+
+/*  */
+
+table.separated1 {
+	background-color: lavenderblush;
+	caption-side: top;
+	color: black;
+	border: 2px solid #111010;
+	border-radius: 0px 0px 3px 3px;
+	box-shadow: 4px 5px 4px 0px rgb(0 0 0 / 20%);
+}
+
+table.separated1 caption {
+	font-weight: bold;
+	text-decoration: underline;
+	border-bottom: 1px dotted black;
+	text-align: left;
+	padding: 5px 5px;
+	background-color: rgb(92 146 184);
+	color: black;
+	border: 2px solid #111010;
+	border-bottom: 0px;
+	border-radius: 3px 3px 0px 0px;
+	box-shadow: 4px 3px 5px 0px rgb(0 0 0 / 20%);
+}
+
+table.separated1 tr th,
+table.separated1 tr td {
+	padding: 4px;
+}
+
+table.separated1 table.metadata tr th,
+table.separated1 table.metadata tr td {
+	padding: 0px 5px 4px 0px;
+	border: 0;
+	font-family: monospace;
+}
+
+table.separated1 table.metadata tr th {
+	white-space: pre;
+}
+
+.buttonsDiv{
+	float: right;
+	padding: 0px;
+	margin: 0px;
+}
+.actionButton1 {
+	height: 17px;
+	border: 1px solid black;
+	font-size: 1.0em;
+	line-height: 1.0em;
+	padding-left: 10px;
+	padding-right: 10px;
+	background-color: #f0f0f0;
+	font-family: monospace;
+	border-radius: 5px;
+	cursor: pointer;
+	display: inline-block;
+	margin-left: 5px;
+}
+
+.actionButton1:hover {
+	background-color: #79bceb;
+}
+
+.actionButton1:active {
+	background-color: #45a6ea;
+	cursor: wait;
+}
+
+.log_data .errors {
+	background-color: #f5cbd3;
+	border: 1px solid black;
+}
+
+.log_data .logs {}
+
+table.metadata {
+	background-color: #f1e4e8;
+	width: 240px;
+}
