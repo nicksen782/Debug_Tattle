@@ -27,21 +27,64 @@
 
 	<!-- include the stylesheet file -->
 	<link href="css/app.css" rel="stylesheet" type="text/css">
+	<link href="css/records.css" rel="stylesheet" type="text/css">
 	<link href="css/examples.css" rel="stylesheet" type="text/css">
+	<link href="css/nav.css" rel="stylesheet" type="text/css">
 
 	<script src="js/app.js"></script>
 </head>
 <body>
-	Welcome
-	<div id="title">title</div>
-	<div id="nav">nav</div>
-	<div id="examples">
-		<?php include "partials/examples.php"; ?>
-	</div>
-	<div id="records">
-		<div id="records_div">
+	
+	<div id="content">
+		<header id="header">DebugTattle v6</header>
+		<br>
 
+		<div id="nav">
+			<div id="nav_tabs">
+				<div class="nav_tab active" viewid="view_records">RECORDS</div>
+				<div class="nav_tab" viewid="view_examples">EXAMPLES</div>
+				<div class="nav_tab" viewid="view_admin">ADMIN</div>
+			</div>
+
+			<div id="nav_contents">
+				<div id="view_records" class="nav_view show">
+					<br>
+					<button id="records_getAll">GetAll</button>
+					<button id="records_removeAll">RemoveAll</button>
+					<br>
+					<br>
+					<div id="records_div"></div>
+				</div>
+
+				<div id="view_examples" class="nav_view">
+					<br>
+					<?php include "partials/examples.php"; ?>
+				</div>
+
+				<div id="view_admin" class="nav_view">
+					<br>
+					<table>
+						<caption>TESTS</caption>
+						<tr> 
+							<td><button id="records_test1">Server Tattle Test</button></td>
+							<td>Ask server to make a test Tattle.</td> 
+						</tr>
+						<tr> 
+							<td><button id="records_test2">Web-Client Tattle Test</button></td> 
+							<td>Make test Tattle via JavaScript</td> 
+						</tr>
+					</table>
+					
+					
+				</div>
+			</div>
 		</div>
 	</div>
+
+	<footer id="footer">
+		DebugTattle v6 &copy; 2016-2022 Nickolas Andersen (nicksen782) (<a href="https://github.com/nicksen782/Debug_Tattle" target="_blank">Github</a>)
+	</footer>
+	<!-- <br> -->
+
 </body>
 </html>

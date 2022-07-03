@@ -1,10 +1,9 @@
 <?php
 // Get the app root dir.
-$_appdir = getcwd() . '/../..'; // Move back two dirs.
-chdir($_appdir);
+chdir(__DIR__ );
 
 // Global.
-$configFile = json_decode(file_get_contents( "backend/tests/config.json" ), true) ;
+$configFile = json_decode(file_get_contents( "config.json" ), true) ;
 $urlHttp  = "http://"  . $configFile['hostname'] . $configFile['path']; 
 $urlHttps = "https://" . $configFile['hostname'] . $configFile['path']; 
 $apikey = $configFile['apikey']; 
@@ -56,9 +55,9 @@ function tester($tests){
 	}
 };
 tester([
-	[ "m"=> "POST", "u"=>$urlHttps, "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_POST_HTTPS_FGC" , "v"=>"PHP_POST_HTTPS_FGC" ],
+	// [ "m"=> "POST", "u"=>$urlHttps, "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_POST_HTTPS_FGC" , "v"=>"PHP_POST_HTTPS_FGC" ],
 	[ "m"=> "POST", "u"=>$urlHttp , "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_POST_HTTP_FGC " , "v"=>"PHP_POST_HTTP_FGC"  ],
-	[ "m"=> "GET" , "u"=>$urlHttps, "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_GET_HTTPS_FGC " , "v"=>"PHP_GET_HTTPS_FGC"  ],
-	[ "m"=> "GET" , "u"=>$urlHttp , "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_GET_HTTP_FGC  " , "v"=>"PHP_GET_HTTP_FGC"   ],
+	// [ "m"=> "GET" , "u"=>$urlHttps, "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_GET_HTTPS_FGC " , "v"=>"PHP_GET_HTTPS_FGC"  ],
+	// [ "m"=> "GET" , "u"=>$urlHttp , "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_GET_HTTP_FGC  " , "v"=>"PHP_GET_HTTP_FGC"   ],
 ]);
 echo "\n";

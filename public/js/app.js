@@ -196,7 +196,6 @@ _APP.logs = {
 					{ "k":"line"    , "l":"LINE    :", },
 					{ "k":"method"  , "l":"METHOD  :", },
 					{ "k":"user"    , "l":"USER    :", },
-					// { "k":"apikey"  , "l":"APIKEY  :", },
 				];
 				data.forEach(function(data_rec){
 					// Break out the values.
@@ -299,6 +298,8 @@ _APP.logs = {
 				"key":_APP.auth.apikey,
 			};
 			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+			_APP.logs.createTableRecs(resp);
+
 			resolve(resp);
 		});
 	},
@@ -317,8 +318,7 @@ _APP.logs = {
 			}
 			else{
 				// Refresh the list.
-				let data = await _APP.logs.getAll();
-				_APP.logs.createTableRecs(data);
+				await _APP.logs.getAll();
 			}
 
 			resolve(resp);
@@ -331,14 +331,61 @@ _APP.logs = {
 				"key":_APP.auth.apikey,
 			};
 			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
-
-			let data = await _APP.logs.getAll();
-			_APP.logs.createTableRecs(data);
-
-			resolve(resp);
+			await _APP.logs.getAll();
+			resolve();
 		});
 	},
+	internalLogTest: function(){
+		return new Promise(async function(resolve,reject){
+			let obj = {
+				"o":"internalLogTest",
+				"key":_APP.auth.apikey,
+			};
+			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+			await _APP.logs.getAll();
+			resolve();
+		});
+	},
+	webLogTest: function(){
+		let _stats = (function (){ 
+			let e = new Error(); let lines = e.stack.split("\n").map(d=>d.trim());
+			let file = lines[1].replace("at ", "").split(":").filter(d=>isNaN(d)).join("").replace("//", "://"); 
+			let func = lines[2].split("at ")[1].split(" ")[0]; func = func.indexOf(".") ? func.substring(func.indexOf(".")+1) : func;
+			let line = lines[2].split(":").reverse()[1];
+			return { "file":file, "func":func, "line":line };
+		})();
+		return new Promise(async function(resolve,reject){
+			let obj = {
+				"o":"add",
+				"key":_APP.auth.apikey,
+				"data" : {
+					"origin" : { "FILE": _stats.file , "LINE": _stats.line , "FUNCTION" : _stats.func },
+					"data"   : { 
+						"webLogTest" : "webLogTest"
+					}
+				}
+			};
+			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+			await _APP.logs.getAll();
+			resolve();
+		});
+	},
+	
 	sendToConsole: function(){},
+
+	init: function(){
+		let records_getAll    = document.getElementById("records_getAll");
+		records_getAll   .addEventListener("click", _APP.logs.getAll, false);
+
+		let records_removeAll = document.getElementById("records_removeAll");
+		records_removeAll.addEventListener("click", _APP.logs.removeAll, false);
+
+		let records_test1 = document.getElementById("records_test1");
+		records_test1.addEventListener("click", _APP.logs.internalLogTest, false);
+
+		let records_test2 = document.getElementById("records_test2");
+		records_test2.addEventListener("click", _APP.logs.webLogTest, false);
+	},
 };
 _APP.examples = {
 	selectText : function(elem){
@@ -469,8 +516,101 @@ _APP.examples = {
 		_APP.examples.fixNodeExamples();
 		_APP.examples.fixBashCurlExamples();
 		_APP.examples.fixJsFetchExamples();
-	}
+	},
 
+	examplesDOM : [],
+	init: function(){
+		// DOM
+		let tabs = document.querySelectorAll("#example_tabs .example_tab");
+		tabs.forEach(function(tab){
+			let viewid = tab.getAttribute("viewid");
+			let div = document.getElementById(viewid);
+			_APP.examples.examplesDOM.push({
+				'tab'             : tab,
+				'div'             : div,
+				'expandIndicator' : tab.querySelector(".expandIndicator"),
+				'contentDiv'      : div.querySelector(".example_content"),
+			});
+		});
+
+		// Event listeners.
+		_APP.examples.examplesDOM.forEach(function(d){
+			d.tab.addEventListener("click", function(){ 
+				// Hide the others.
+				_APP.examples.collapseOthers(d);
+
+				// Show or hide this one based on if it has "expanded" or not.
+				if( !d.contentDiv.classList.contains("expanded") ){ _APP.examples.showOne(d); }
+				else{ _APP.examples.hideOne(d); }
+			}, false);
+		});
+
+		_APP.examples.fixExamples();
+		// _APP.examples.collapseAll();
+	},
+	showOne: function(obj){
+		obj.tab.classList.add("active");
+		obj.contentDiv.classList.add("expanded");
+		obj.expandIndicator.classList.add("up");
+	},
+	hideOne: function(obj){
+		obj.tab.classList.remove("active");
+		obj.contentDiv.classList.remove("expanded");
+		obj.expandIndicator.classList.remove("up");
+	},
+	collapseOthers: function(ignoreThis){
+		_APP.examples.examplesDOM.forEach(function(d){
+			if(d != ignoreThis){
+				_APP.examples.hideOne(d);
+			}
+		});
+	},
+	collapseAll: function(){
+		_APP.examples.examplesDOM.forEach(function(d){
+			_APP.examples.hideOne(d);
+		});
+	},
+
+};
+_APP.nav = {
+	hideTabs : function(){
+		_APP.nav.navDOM.forEach(function(d){
+			d.tab.classList.remove("active");
+		});
+	},
+	hideViews: function(){
+		_APP.nav.navDOM.forEach(function(d){
+			d.view.classList.remove("show");
+		});
+	},
+	showTab  : function(elem){
+		elem.tab.classList.add("active");
+	},
+	showView : function(elem){
+		elem.view.classList.add("show");
+	},
+
+	navDOM : [],
+	init : function(){
+		// 
+		let tabs = document.querySelectorAll("#nav_tabs .nav_tab");
+		tabs.forEach(function(tab){
+			_APP.nav.navDOM.push({
+				'tab'             : tab,
+				'view'            : document.getElementById( tab.getAttribute("viewid") ),
+			});
+		});
+
+		// Event listeners.
+		_APP.nav.navDOM.forEach(function(d){
+			d.tab.addEventListener("click", function(){ 
+				_APP.nav.hideTabs();
+				_APP.nav.hideViews();
+				_APP.nav.showTab(d);
+				_APP.nav.showView(d);
+			}, false);
+		});
+	},
 };
 window.onload = async function(){
 	window.onload = null;
@@ -479,7 +619,7 @@ window.onload = async function(){
 	_APP.auth.retrieveApikeyCookie("debug_tattleV6_apikey");
 
 	let isApikeyValid = _APP.auth.checkNewApikey(_APP.auth.apikey);
-	console.log("isApikeyValid:", isApikeyValid);
+	// console.log("isApikeyValid:", isApikeyValid);
 	// console.log("_APP.auth.apikey:", _APP.auth.apikey);
 
 	// Clear the search.
@@ -489,9 +629,8 @@ window.onload = async function(){
 		history.replaceState(null, document.title, loc);
 	}
 
-	let data = await _APP.logs.getAll();
-	_APP.logs.createTableRecs(data);
-
-	_APP.examples.fixExamples();
-	
+	_APP.logs.init();
+	await _APP.logs.getAll();
+	_APP.examples.init();
+	_APP.nav.init();
 };

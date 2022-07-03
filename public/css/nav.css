@@ -1,0 +1,35 @@
+#nav {
+	/* border-bottom: 1px solid black; */
+	padding: 5px;
+}
+
+#nav_tabs {
+	border-bottom: 1px solid black;
+	padding-bottom: 1px;
+}
+
+.nav_tab {
+	display: inline-block;
+	border: 1px solid black;
+	width: 200px;
+	text-align: center;
+	height: 30px;
+	padding: 5px;
+	position: relative;
+	cursor:
+		pointer;
+	border-radius: 5px 5px 0px 0px;
+	background-color: darkgrey;
+}
+
+.nav_tab.active {
+	background-color: blanchedalmond;
+}
+
+.nav_view {
+	display: none;
+}
+
+.nav_view.show {
+	display: block;
+}

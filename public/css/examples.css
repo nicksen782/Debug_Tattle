@@ -1,37 +1,98 @@
-#examples{
-	border: 1px solid black;
+#view_examples {}
+
+#example_tabs {
+	border-bottom: 1px solid black;
+	/* padding-bottom:1px; */
+	position: relative;
+	top: 1px;
 }
-.example{
+
+.example_tab {
+	display: inline-block;
 	border: 1px solid black;
+	min-width: 100px;
+	text-align: center;
+	height: 30px;
+	padding: 5px;
+	padding-left: 35px;
+	position: relative;
+	cursor:
+		pointer;
+	vertical-align: top;
+	position: relative;
+	top: 1px;
+	/* background-color: blanchedalmond; */
+	border-bottom: 1px solid blanchedalmond;
+	text-decoration: underline;
+	border-radius: 5px 5px 0px 0px;
+	background-color: darkgrey;
 }
-.example_title{
-	border: 1px solid black;
+
+.example_tab.active {
+	background-color: blanchedalmond;
+	/* border-bottom: 1px solid blanchedalmond; */
 }
-.example_content{
-    background-color: blanchedalmond;
-    white-space: pre;
-    font-family: monospace;
-    border-radius: 0px 5px 5px 5px;
-    border: 1px solid black;
-    padding: 5px;
-    /* transition: all 0.25s; */
-    /* max-height: 1px; */
-    /* overflow: hidden; */
+
+.example_url {
+	background-color: burlywood;
+	border: 1px solid red;
+	font-style: italic;
+}
+
+.example_key {
+	background-color: burlywood;
+	border: 1px solid red;
+	font-style: italic;
+}
+
+.example_protocol {
+	background-color: burlywood;
+	border: 1px solid red;
+	font-style: italic;
+}
+
+.example_content {
+	background-color: blanchedalmond;
+	white-space: pre;
+	font-family: monospace;
+	/* transition: max-height 0.15s, max-width 0.15s; */
 	tab-size: 2;
-    overflow: auto;
+	max-width: 0px;
+	max-height: 0px;
+	overflow: hidden;
 }
-.example_url{
-	background-color: burlywood;
-    border: 1px solid red;
-    font-style: italic;
+
+.example_content.expanded {
+	transition: max-height 0.75s, max-width 0.0s;
+	border-radius: 0px 5px 5px 5px;
+	border: 1px solid black;
+	padding: 5px;
+	/* overflow: auto; */
+	max-width: 1000px;
+	max-height: 1000px;
+	display: inline-block;
 }
-.example_key{
-	background-color: burlywood;
-    border: 1px solid red;
-    font-style: italic;
+
+.expandIndicator {
+	position: absolute;
+	top: 1px;
+	left: 1px;
+	border: 1px solid black;
+	border-radius: 5px;
+	width: 26px;
+	height: 26px;
+	text-align: center;
+	background-color: lightgray;
+	cursor: pointer;
+	color: black;
+	line-height: 24px;
+	font-size: 20px;
 }
-.example_protocol{
-	background-color: burlywood;
-    border: 1px solid red;
-    font-style: italic;
+
+.expandIndicator:before {
+	content: '\25B2';
+}
+
+.expandIndicator.up:before {
+	content: '\25BC';
 }

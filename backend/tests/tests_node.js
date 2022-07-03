@@ -1,3 +1,12 @@
+try {
+	process.chdir(__dirname);
+	//   console.log('New directory: ' + process.cwd());
+}
+catch (err) {
+	console.log('Could not change working directory: ' + err);
+	process.exit(1);
+}
+
 // const fetch   = import('node-fetch');
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync("config.json", 'utf8'));

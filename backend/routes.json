@@ -1,9 +1,10 @@
 {
- "check_apikey" : { "f": "check_apikey"   , "m": ["POST"] , "r": []                , "a": [ "key", true ] },
- "add"          : { "f": "logs_addOne"    , "m": ["POST"] , "r": ["logs_addOne"]   , "a": [ "data", false ] },
- "getAll"       : { "f": "logs_getAll"    , "m": ["POST"] , "r": ["ADMIN"]         , "a": [] },
- "removeAll"    : { "f": "logs_removeAll" , "m": ["POST"] , "r": ["ADMIN"]         , "a": [] },
- "removeAllSelf": { "f": "removeAllSelf"  , "m": ["POST"] , "r": ["removeAllSelf"] , "a": [] },
- "getSome"      : { "f": "logs_getSome"   , "m": ["POST"] , "r": ["logs_getSome"]  , "a": [ "filterName", "filterValue" ] },
- "removeOne"    : { "f": "logs_removeOne" , "m": ["POST"] , "r": ["logs_removeOne"], "a": [ "tid" ] }
+ "internalLogTest" : { "f": "internalLogTest"     , "m": ["POST"] , "r": ["logs_addOne"]   , "a": [ "data", false ] },
+ "check_apikey"    : { "f": "check_apikey"   , "m": ["POST"] , "r": []                , "a": [ "key", true ] },
+ "add"             : { "f": "logs_addOne"    , "m": ["POST"] , "r": ["logs_addOne"]   , "a": [ "data", false ] },
+ "getAll"          : { "f": "logs_getAll"    , "m": ["POST"] , "r": ["ADMIN"]         , "a": [] },
+ "removeAll"       : { "f": "logs_removeAll" , "m": ["POST"] , "r": ["ADMIN"]         , "a": [] },
+ "removeAllSelf"   : { "f": "removeAllSelf"  , "m": ["POST"] , "r": ["removeAllSelf"] , "a": [] },
+ "getSome"         : { "f": "logs_getSome"   , "m": ["POST"] , "r": ["logs_getSome"]  , "a": [ "filterName", "filterValue" ] },
+ "removeOne"       : { "f": "logs_removeOne" , "m": ["POST"] , "r": ["logs_removeOne"], "a": [ "tid" ] }
 }

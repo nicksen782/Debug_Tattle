@@ -1,8 +1,8 @@
 // NODE http/https built-in module.
 let _stats = (function(){ 
 	let e = new Error(); let frame = e.stack.split("\n")[2].trim(); 
-	let o = { "fName":frame.split("at ")[1].split(" ")[0], "lNum":frame.split(":").reverse()[1] };
-	if(o.fName.indexOf(".") != -1){ o.fName = o.fName.substring(o.fName.indexOf(".")+1); }
+	let o = { "func":frame.split("at ")[1].split(" ")[0], "line":frame.split(":").reverse()[1] };
+	if(o.func.indexOf(".") != -1){ o.func = o.func.substring(o.func.indexOf(".")+1); }
 	return o; 
 })();
 
@@ -15,7 +15,7 @@ try{
 		else     { http = require('http');  port = 80;  }
 		 
 		let _data = {
-			"origin" : { "FILE": __filename , "LINE": _stats.lNum , "FUNCTION" : _stats.fName },
+			"origin" : { "FILE": __filename , "LINE": _stats.line , "FUNCTION" : _stats.func },
 			"data"   : { 
 				"NAMED_KEY" : "DESIRED_VALUE"
 			}

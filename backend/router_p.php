@@ -179,6 +179,21 @@ function API_REQUEST($o, $data){
 
 // *****
 
+function internalLogTest(){
+	// Write a message to the tattle table.
+	$_message = [
+		"origin" => [ "FILE" =>  __FILE__ , "LINE" =>  __LINE__ , "FUNCTION" => __FUNCTION__ ],
+		"data"   => [ 
+			'internalLogTest' => "internalLogTest" ,
+		]
+	];
+	logs_addOne($_message, true);
+
+	echo json_encode(true);
+}
+
+// *****
+
 // Converts POST data from within php://input to $_POST (requires a 'o' key.)
 function inputJsonToPost(){
 	// Get the data from php://input and try to use json_decode.
@@ -448,7 +463,7 @@ function logs_getAll(){
 	global $dbFile;
 	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
-	$sql = "SELECT * FROM tattles ORDER BY tid DESC;";
+	$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles ORDER BY tid DESC;";
 	$prep = $dbHandle->prepare( $sql );
 	$exec = $dbHandle->execute();
 
@@ -499,21 +514,21 @@ function logs_getSome($filterName, $filterValue){
 	switch($filterName){
 		case "ownApikey"       : { 
 			global $active_apikey;
-			$sql = "SELECT * FROM tattles WHERE apikey = :apikey;";
+			$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE apikey = :apikey;";
 			$prep = $dbHandle->prepare( $sql );
 			$dbHandle->bind(':active_apikey'     , $active_apikey );
 			$exec = $dbHandle->execute();
 			break; 
 		}
 		case "otherUserApikey" : { 
-			$sql = "SELECT * FROM tattles WHERE apikey = :apikey;";
+			$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE apikey = :apikey;";
 			$prep = $dbHandle->prepare( $sql );
 			$dbHandle->bind(':apikey'     , $filterValue );
 			$exec = $dbHandle->execute();
 			break; 
 		}
 		case "unknownUser"     : { 
-			$sql = "SELECT * FROM tattles WHERE user = 'UNKNOWN';";
+			$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE user = 'UNKNOWN';";
 			$prep = $dbHandle->prepare( $sql );
 			$dbHandle->bind(':filterValue'     , $filterValue );
 			$exec = $dbHandle->execute();

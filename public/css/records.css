@@ -1,0 +1,90 @@
+#view_records {
+	border-bottom: 1px solid black;
+}
+
+.record_table {
+	border: 1px solid blue;
+	margin-bottom: 5px;
+	border-collapse: collapse;
+}
+
+.leftColumn {}
+
+.rightColumn {}
+
+.record_table td {
+	vertical-align: top;
+}
+
+.record_table .metadata th {
+	text-align: left;
+	height: unset;
+}
+
+.record_table caption {
+	border: 1px solid green;
+	text-align: left;
+	position: relative;
+	height: 30px;
+}
+
+.record_table tr th {
+	height: 30px;
+}
+
+.log_data {
+	font-family: monospace;
+	width: 780px;
+	max-width: 780px;
+}
+
+.log_data .logs .log_filename {
+	border-bottom: 1px solid black;
+}
+
+.logTh {
+	position: relative;
+}
+
+.log_data .errors .title {
+	position: relative;
+	min-height: 30px;
+	text-align: center;
+	font-weight: bold;
+	line-height: 32px;
+	font-size: 18px;
+	border-bottom: 1px solid black;
+}
+
+.log_data .logs .content {
+	white-space: pre-wrap;
+	font-family: monospace;
+	padding: 5px;
+	/* width: 760px; */
+	/* max-width: 760px; */
+	overflow-wrap: break-word;
+}
+
+.log_data .errors .content {
+	white-space: pre-line;
+	font-family: monospace;
+	border-bottom: 1px solid black;
+	padding: 5px;
+	overflow-wrap: break-word;
+}
+
+.buttonsDiv {
+	float: right;
+	padding: 0px;
+	margin: 0px;
+}
+
+.log_data .errors {
+	background-color: #f5cbd3;
+	border: 1px solid black;
+}
+
+table.metadata {
+	background-color: #f1e4e8;
+	width: 240px;
+}
