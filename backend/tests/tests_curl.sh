@@ -3,9 +3,18 @@
 BASEDIR=$(dirname $0)
 cd $BASEDIR
 
-B_hostname=$(node -e "let pkg=require('./config.json'); process.stdout.write(pkg.hostname);")
-B_path=$(node -e "let pkg=require('./config.json'); process.stdout.write(pkg.path);")
-B_apikey=$(node -e "let pkg=require('./config.json'); process.stdout.write(pkg.apikey);")
+if [ -z "$1" ]; then
+	echo "ERROR: You did not specify the config file.";
+	exit;
+fi
+if [ -z "$2" ]; then
+	echo "ERROR: You did not specify protocol (http or https.)";
+	exit;
+fi
+
+B_hostname=$(node -e "let pkg=require(process.argv[1]); process.stdout.write(pkg.hostname);" ./$1)
+B_path=$(node -e "let pkg=require(process.argv[1]); process.stdout.write(pkg.path);" ./$1)
+B_apikey=$(node -e "let pkg=require(process.argv[1]); process.stdout.write(pkg.apikey);" ./$1)
 B_urlHttp="http://$B_hostname$B_path"
 B_urlHttps="https://$B_hostname$B_path"
 B_SCRIPT=$(realpath -s "$0")
@@ -16,6 +25,7 @@ B_SCRIPT=$(realpath -s "$0")
 # echo "B_urlHttp : $B_urlHttp"
 # echo "B_urlHttps: $B_urlHttps"
 # echo "B_SCRIPT  : $B_SCRIPT"
+# exit
 
 function curl_test() {
 	B_LINENO=${LINENO}
@@ -23,11 +33,10 @@ function curl_test() {
 
 	JSON='
 	{
-		"o"   : "add",
-		"key" : "'"$B_apikey"'",
+		"o": "add","key": "'"$B_apikey"'",
 		"data": {
 			"origin": { "FILE": "'"$B_SCRIPT"'", "LINE": "'"$B_LINENO"'", "FUNCTION": "'"$B_FUNC"'" },
-			"data"  : {"curl_bash_https_post": "Working correctly." }
+			"data"  : { "curl_test": "Working correctly." }
 		}
 	}'
 
@@ -39,8 +48,12 @@ function curl_test() {
 		echo $RESULTS
 	fi
 }
-TEST_HTTP=$(curl_test $B_urlHttp)
-TEST_HTTPS=$(curl_test $B_urlHttps)
-echo "CURL_POST_HTTP_T1   : $TEST_HTTP"
-echo "CURL_POST_HTTPS_T1  : $TEST_HTTPS"
 
+HTTP=$([ "$2" == "https" ] && echo "HTTPS" || echo "$HTTP")
+USETHISURL=$([ "$2" == "https" ] && echo "$B_urlHttps" || echo "$B_urlHttp")
+TEST=$(curl_test $USETHISURL)
+if test "$HTTP" == "HTTPS"; then
+	echo "CURL_POST_HTTPS_T1  : $TEST"
+else
+	echo "CURL_POST_HTTP_T1   : $TEST"
+fi

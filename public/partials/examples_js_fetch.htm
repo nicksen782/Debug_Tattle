@@ -1,4 +1,4 @@
-let _stats = (function(){ 
+let _stats = (function (){ 
 	let e = new Error(); let lines = e.stack.split("\n").map(d=>d.trim());
 	let file = lines[1].replace("at ", "").split(":").filter(d=>isNaN(d)).join("").replace("//", "://"); 
 	let func = lines[2].split("at ")[1].split(" ")[0]; func = func.indexOf(".") ? func.substring(func.indexOf(".")+1) : func;
@@ -8,7 +8,7 @@ let _stats = (function(){
 let _data = {
 	"o"   : "add", "key" : "__APIKEY__",
 	"data" : {
-		"origin" : { "FILE": "UNAVAILABLE_IN_JAVASCRIPT" , "LINE": _stats.line , "FUNCTION" : _stats.func },
+		"origin" : { "FILE": _stats.file , "LINE": _stats.line , "FUNCTION" : _stats.func },
 		"data"   : { 
 			"NAMED_KEY" : "DESIRED_VALUE"
 		}
@@ -19,12 +19,9 @@ resp = fetch("__URL__" ,
 	{
 		method: 'POST',
 		headers: {
-			'Accept'          : 'application/json',
+			"Accept"          : 'application/json',
 			"Accept-Encoding" : 'gzip;q=0,deflate;q=0',
-			//'Content-Type'    : 'application/json', // Works.
-			// 'Content-Type'    : 'application/x-www-form-urlencoded', // Does not work.
-			 'Content-Type'    : 'multipart/form-data', // works.
-			// "Content-Encoding": 'gzip',
+			"Content-Type"    : 'application/json', // Works.
 		},
 		body: JSON.stringify(_data)
 	}

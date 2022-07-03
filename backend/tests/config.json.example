@@ -1,5 +1,6 @@
 {
-	"apikey"   : "PUT_YOUR_KEY_HERE",
-	"urlHttp"  : "http://127.0.0.1/Debug_Tattle/backend/router_p.php",
-	"urlHttps" : "https://127.0.0.1/Debug_Tattle/backend/router_p.php"
+	"username" : "PUT_YOUR_USER_HERE",
+	"apikey"   : "PUT_YOUR_KEY_HERE!",
+	"hostname" : "127.0.0.1/Debug_Tattle/backend/gateway_p.php",
+	"path"     : "/Debug_Tattle/backend/gateway_p.php
 }

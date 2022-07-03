@@ -69,7 +69,7 @@
 			<div id="nav_contents">
 				<div id="view_records" class="nav_view show">
 					<br>
-					<button id="records_getSome">GetSome</button>
+					<button id="records_getSome">GetYours</button>
 					<button id="records_getAll">GetAll</button>
 					<button id="records_removeAll">RemoveAll</button>
 					<br>

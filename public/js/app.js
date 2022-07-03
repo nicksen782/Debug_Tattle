@@ -51,6 +51,7 @@ _APP.fetch = {
 
 _APP.auth = {
 	apikey: "",
+	// Used during apikey change for a user.
 	checkNewApikey: function(newApiKey){
 		// Get the length of the string. 
 		let str_length = newApiKey.length;
@@ -85,6 +86,7 @@ _APP.auth = {
 		// Return the valid flag.
 		return valid;
 	},
+	// NOT USED.
 	retrieveApikeyCookie: function(){
 		// Set the apikey.
 		_APP.auth.apikey = _APP.auth.cookies.getCookieValue("debug_tattleV6_apikey");
@@ -166,7 +168,7 @@ _APP.logs = {
 			button1.innerText = "Remove";
 			button1.classList.add("actionButton1");
 			// If admin then change "ownApikey" to "otherUserApikey"
-			button1.addEventListener("click", function(){ _APP.logs.user.removeOne(obj.rec.tid, obj.table, "ownApikey", obj.rec.user); }, false);
+			button1.addEventListener("click", function(){ _APP.logs.user.removeOne(obj.rec.tid, obj.table, "own", obj.rec.user); }, false);
 			
 			// Create log button.
 			let button2 = document.createElement("div");
@@ -339,8 +341,7 @@ _APP.logs = {
 			})();
 			return new Promise(async function(resolve,reject){
 				let obj = {
-					"o":"add",
-					"key":_APP.auth.apikey,
+					"o":"add", "key":_APP.auth.apikey,
 					"data" : {
 						"origin" : { "FILE": _stats.file , "LINE": _stats.line , "FUNCTION" : _stats.func },
 						"data"   : { 
@@ -355,6 +356,39 @@ _APP.logs = {
 		},
 	},
 	user: {
+		removeOne: function(tid, table, filterName="own", filterValue=""){
+			return new Promise(async function(resolve,reject){
+				let filterNames = [
+					"own",
+					"other",
+				];
+				if(filterNames.indexOf(filterName) == -1){ reject("ERROR: Invalid filterName."); return; }
+				switch(filterName){
+					case "own"  : { break; }
+					case "other": { break; }
+				};
+	
+				let obj = {
+					"o":"removeOne",
+					"key":_APP.auth.apikey,
+					"tid": tid,
+					"filterName" : filterName,
+					"filterValue": filterValue,
+				};
+				let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+	
+				if(table){
+					// Only remove the entry, don't refresh the list.
+					table.remove();
+				}
+				else{
+					// Refresh the list.
+					await _APP.logs.getSome();
+				}
+	
+				resolve(resp);
+			});
+		},
 	},
 
 	getSome: function(filterName="ownApikey", filterValue=""){
@@ -389,39 +423,7 @@ _APP.logs = {
 			resolve(resp);
 		});
 	},
-	removeOne: function(tid, table, filterName="ownApikey", filterValue=""){
-		return new Promise(async function(resolve,reject){
-			let filterNames = [
-				"own",
-				"other",
-			];
-			if(filterNames.indexOf(filterName) == -1){ reject("ERROR: Invalid filterName."); return; }
-			switch(filterName){
-				case "own"  : { break; }
-				case "other": { break; }
-			};
-
-			let obj = {
-				"o":"removeOne",
-				"key":_APP.auth.apikey,
-				"tid": tid,
-				"filterName" : filterName,
-				"filterValue": filterValue,
-			};
-			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
-
-			if(table){
-				// Only remove the entry, don't refresh the list.
-				table.remove();
-			}
-			else{
-				// Refresh the list.
-				await _APP.logs.getSome();
-			}
-
-			resolve(resp);
-		});
-	},
+	
 	
 	sendToConsole: function(){},
 
@@ -443,17 +445,19 @@ _APP.logs = {
 	},
 };
 _APP.examples = {
+	examplesDOM : [],
 	selectText : function(elem){
 		window.getSelection().selectAllChildren(elem);
 	},
+
+	// String replacements for the examples to the user's values.
 	fixPhpExamples     : function(){
 		// Get handle to the example content div.
 		let exampleDiv = document.querySelector("#example_php .example_content");
 		exampleDiv.addEventListener("dblclick", function(){ _APP.examples.selectText(exampleDiv); }, false);
 
-		// For PHP we will be changing the last line.
-		let lines = exampleDiv.innerText.split("\n").filter(d=> d.trim() != "");
-		let lastLine = lines.pop();
+		// For PHP we do a global string replace.
+		let lines = exampleDiv.innerText.split("\n").filter(d=> d.trim() != "").join("\n");;
 
 		// Create replacements for "URL" and "APIKEY"
 		let urlSpan    = document.createElement("span"); 
@@ -465,16 +469,13 @@ _APP.examples = {
 		apikeySpan.innerText = _APP.auth.apikey;
 
 		// Replace the placeholders with the current values.
-		lastLine = lastLine
-		.replace("URL", urlSpan.outerHTML)
-		.replace("APIKEY", apikeySpan.outerHTML)
+		lines = lines
+		.replace("__URL__", urlSpan.outerHTML)
+		.replace("__APIKEY__", apikeySpan.outerHTML)
 		;
 
-		// Add the line back.
-		lines.push(lastLine);
-
 		// Replace the div content.
-		exampleDiv.innerHTML = lines.join("\n");
+		exampleDiv.innerHTML = lines;
 	},
 	fixNodeExamples    : function(){
 		// Get handle to the example content div.
@@ -513,6 +514,32 @@ _APP.examples = {
 		exampleDiv.innerHTML = lines;
 
 	},
+	fixBashCurlExamples: function(){
+		// Get handle to the example content div.
+		let exampleDiv = document.querySelector("#example_bash_curl .example_content");
+		exampleDiv.addEventListener("dblclick", function(){ _APP.examples.selectText(exampleDiv); }, false);
+
+		// For BASH_CURL we do a global string replace.
+		let lines = exampleDiv.innerText.split("\n").filter(d=> d.trim() != "").join("\n");
+
+		// Create replacements for "URL" and "APIKEY"
+		let urlSpan    = document.createElement("span"); 
+		urlSpan.classList.add("example_url");
+		urlSpan.innerText = window.location.origin + window.location.pathname.replace("app.php", "gateway_p.php");
+
+		let apikeySpan = document.createElement("span"); 
+		apikeySpan.classList.add("example_key");
+		apikeySpan.innerText = _APP.auth.apikey;
+
+		// Replace the placeholders with the current values.
+		lines = lines
+		.replace("__URL__", urlSpan.outerHTML)
+		.replace("__APIKEY__", apikeySpan.outerHTML)
+		;
+
+		// Replace the div content.
+		exampleDiv.innerHTML = lines;
+	},
 	fixJsFetchExamples: function(){
 		// Get handle to the example content div.
 		let exampleDiv = document.querySelector("#example_js_fetch .example_content");
@@ -540,40 +567,33 @@ _APP.examples = {
 		// Replace the div content.
 		exampleDiv.innerHTML = lines;
 	},
-	fixBashCurlExamples: function(){
-		// Get handle to the example content div.
-		let exampleDiv = document.querySelector("#example_bash_curl .example_content");
-		exampleDiv.addEventListener("dblclick", function(){ _APP.examples.selectText(exampleDiv); }, false);
-
-		// For BASH_CURL we do a global string replace.
-		let lines = exampleDiv.innerText.split("\n").filter(d=> d.trim() != "").join("\n");
-
-		// Create replacements for "URL" and "APIKEY"
-		let urlSpan    = document.createElement("span"); 
-		urlSpan.classList.add("example_url");
-		urlSpan.innerText = window.location.origin + window.location.pathname.replace("app.php", "gateway_p.php");
-
-		let apikeySpan = document.createElement("span"); 
-		apikeySpan.classList.add("example_key");
-		apikeySpan.innerText = _APP.auth.apikey;
-
-		// Replace the placeholders with the current values.
-		lines = lines
-		.replace("$B_URL", urlSpan.outerHTML)
-		.replace("$B_KEY", apikeySpan.outerHTML)
-		;
-
-		// Replace the div content.
-		exampleDiv.innerHTML = lines;
-	},
 	fixExamples: function(){
 		_APP.examples.fixPhpExamples();
 		_APP.examples.fixNodeExamples();
 		_APP.examples.fixBashCurlExamples();
 		_APP.examples.fixJsFetchExamples();
 	},
+	
+	// Tab navigation.
+	showOne: function(obj){
+		obj.tab.classList.add("active");
+		obj.contentDiv.classList.add("expanded");
+		obj.expandIndicator.classList.add("up");
+	},
+	hideOne: function(obj){
+		obj.tab.classList.remove("active");
+		obj.contentDiv.classList.remove("expanded");
+		obj.expandIndicator.classList.remove("up");
+	},
+	collapseOthers: function(ignoreThis){
+		_APP.examples.examplesDOM.forEach(function(d){
+			if(d != ignoreThis){ _APP.examples.hideOne(d); }
+		});
+	},
+	collapseAll: function(){
+		_APP.examples.examplesDOM.forEach(function(d){ _APP.examples.hideOne(d); });
+	},
 
-	examplesDOM : [],
 	init: function(){
 		// DOM
 		let tabs = document.querySelectorAll("#example_tabs .example_tab");
@@ -603,40 +623,17 @@ _APP.examples = {
 		_APP.examples.fixExamples();
 		// _APP.examples.collapseAll();
 	},
-	showOne: function(obj){
-		obj.tab.classList.add("active");
-		obj.contentDiv.classList.add("expanded");
-		obj.expandIndicator.classList.add("up");
-	},
-	hideOne: function(obj){
-		obj.tab.classList.remove("active");
-		obj.contentDiv.classList.remove("expanded");
-		obj.expandIndicator.classList.remove("up");
-	},
-	collapseOthers: function(ignoreThis){
-		_APP.examples.examplesDOM.forEach(function(d){
-			if(d != ignoreThis){
-				_APP.examples.hideOne(d);
-			}
-		});
-	},
-	collapseAll: function(){
-		_APP.examples.examplesDOM.forEach(function(d){
-			_APP.examples.hideOne(d);
-		});
-	},
 
 };
 _APP.nav = {
+	navDOM : [],
+
+	// Tab/View navigation.
 	hideTabs : function(){
-		_APP.nav.navDOM.forEach(function(d){
-			d.tab.classList.remove("active");
-		});
+		_APP.nav.navDOM.forEach(function(d){ d.tab.classList.remove("active"); });
 	},
 	hideViews: function(){
-		_APP.nav.navDOM.forEach(function(d){
-			d.view.classList.remove("show");
-		});
+		_APP.nav.navDOM.forEach(function(d){ d.view.classList.remove("show"); });
 	},
 	showTab  : function(elem){
 		elem.tab.classList.add("active");
@@ -645,7 +642,6 @@ _APP.nav = {
 		elem.view.classList.add("show");
 	},
 
-	navDOM : [],
 	init : function(){
 		// 
 		let tabs = document.querySelectorAll("#nav_tabs .nav_tab");
@@ -670,13 +666,8 @@ _APP.nav = {
 window.onload = async function(){
 	window.onload = null;
 
-	// Read the apikey cookie and store to _APP.auth.apikey;
-	// _APP.auth.retrieveApikeyCookie("debug_tattleV6_apikey");
+	// Read the apikey from internal and store to _APP.auth.apikey;
 	_APP.auth.apikey = _APP.internal.apikey;
-
-	// let isApikeyValid = _APP.auth.checkNewApikey(_APP.auth.apikey);
-	// console.log("isApikeyValid:", isApikeyValid);
-	console.log("_APP.auth.apikey:", _APP.auth.apikey);
 
 	// Clear the search.
 	let loc = window.location.href;
@@ -685,8 +676,9 @@ window.onload = async function(){
 		history.replaceState(null, document.title, loc);
 	}
 
+	// Inits.
 	_APP.logs.init();
-	await _APP.logs.getSome();
 	_APP.examples.init();
 	_APP.nav.init();
+	await _APP.logs.getSome();
 };

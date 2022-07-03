@@ -10,9 +10,9 @@ private/
 # !/
 # !/**
 
+tattle6-error.txt
 backend/db/
 backend/db_init/personal.sql
-backend/tests/node_modules/
-tattle6-error.txt
 backend/tests/config.json
 backend/tests/hardcoded/
+backend/tests/config_prod.json

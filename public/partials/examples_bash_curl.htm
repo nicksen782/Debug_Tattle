@@ -1,7 +1,7 @@
 #!/bin/bash
 JSON='
 {
-	"o"   : "add", "key" : "$B_KEY",
+	"o"   : "add", "key" : "__APIKEY__",
 	"data": {
 		"origin": { "FILE": "'"$(basename "$0")"'", "LINE": "'"${LINENO}"'", "FUNCTION": "'"${FUNCNAME[0]}"'" },
 		"data"  : {
@@ -9,4 +9,4 @@ JSON='
 		}
 	}
 }'
-RESULTS=$(curl --silent -X POST "$B_URL" -H 'Content-Type: application/json' -d "$JSON")
+RESULTS=$(curl --silent -X POST "__URL__" -H 'Content-Type: application/json' -d "$JSON")

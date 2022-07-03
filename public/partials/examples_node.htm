@@ -5,12 +5,10 @@ let _stats = (function(){
 	if(o.func.indexOf(".") != -1){ o.func = o.func.substring(o.func.indexOf(".")+1); }
 	return o; 
 })();
-
 try{ 
 	let args = [__HTTP__, "__HOSTNAME__", "__PATH__", "__APIKEY__"];
 	(function(https, o_hostname, o_path, apikey){
-		let http;
-		let port;
+		let http, port;
 		if(https){ http = require('https'); port = 443; }
 		else     { http = require('http');  port = 80;  }
 		 
@@ -22,27 +20,24 @@ try{
 		};
 
 		const options = { 
-			method   : 'POST', 
-			hostname : o_hostname, 
-			path     : o_path,
-			port     : port,
-			//headers  : { "Content-Type":'application/x-www-form-urlencoded' },
-			headers  : { "Content-Type":'application/json' },
+			"method"   : 'POST', 
+			"hostname" : o_hostname, 
+			"path"     : o_path,
+			"port"     : port,
+			//"headers"  : { "Content-Type":'application/x-www-form-urlencoded' },
+			"headers"  : { "Content-Type":'application/json' },
 		};
 
 		const req = http.request(options, (res) => {
 			let d = '';
 			res.on('data', (c)=>{d+=c;}); 
 			res.on('end', ()=>{
-				try     { console.log("JSON:", JSON.parse(d)); }
-				catch(e){ console.log("TEXT:", d);             }
+				try     { d = JSON.parse(d); }
+				catch(e){}
 				// resolve(d);
-				<!-- console.log("DONE:", d); -->
 			});
 		})
-		.on("error", (err) => { 
-			console.log("err:", err);
-			// reject(err); 
+		.on("error", (err) => { console.log("err:", err); /*reject(err);*/ }
 		});
 		req.write( JSON.stringify( {o:'add', key:apikey, data:(_data)} ) );
 		req.end();

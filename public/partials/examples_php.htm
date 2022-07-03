@@ -9,12 +9,11 @@ call_user_func_array(function($__method__, $__url__, $__apikey__, $__function__)
 			)
 		)
 	));
-
 	$__opts__ = array( 'http' => array( 'method'=>$__method__, 'header'=>"Content-Type: application/x-www-form-urlencoded\r\n" ) );
-	
 	if     ($__method__ == "GET" ){ $payload = $__url__ . "?o=add&key=$__apikey__&data=" . $__data__; }
 	else if($__method__ == "POST"){ $payload = $__url__; $__opts__['http']['content'] = $__data__; }
-
-	$text = file_get_contents( $payload, false, stream_context_create($__opts__) );
-	return $text;
-}, array("POST", "URL", "APIKEY", __FUNCTION__) );
+	$text = @file_get_contents( $payload, false, stream_context_create($__opts__) );
+	$error = error_get_last();
+	if($error){ return false; }
+	else      { return $text; }
+}, array("POST", "__URL__", "__APIKEY__", __FUNCTION__) );
