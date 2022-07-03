@@ -7,9 +7,19 @@
 
 	// Check the cookie, api key and user rights against being invalid or disabled.
 	// NOTE: This function handles redirection and if the validation fails then the script will end there.
-	$result = validateClient();
+	$results = validateClient();
 
-	// echo "<script>console.log('" . $result . "');</script>";
+	$username   = $results['username'];
+	$userRights = $results['userRights'];
+	$apikey     = $results['apikey'];
+	
+	if(in_array("ADMIN", $userRights)){ $users     = get_users(); }
+	else{ $users = []; }
+
+	// echo "<script>console.log('username  :', " . json_encode($username) . ");</script>";
+	// echo "<script>console.log('userRights:', " . json_encode($userRights) . ");</script>";
+	// echo "<script>console.log('apikey    :', " . json_encode($apikey) . ");</script>";
+	// echo "<script>console.log('users    :', " . json_encode($users) . ");</script>";
 
 	// GOOD TO GO!
 ?>
@@ -31,6 +41,16 @@
 	<link href="css/examples.css" rel="stylesheet" type="text/css">
 	<link href="css/nav.css" rel="stylesheet" type="text/css">
 
+	<script>
+		let _APP = {};
+		_APP.internal = {
+			"username"   : <?php echo json_encode($username) ?>,
+			"userRights" : <?php echo json_encode($userRights) ?>,
+			"apikey"     : <?php echo json_encode($apikey) ?>,
+			"users"      : <?php echo json_encode($users) ?>,
+		};
+	</script>
+
 	<script src="js/app.js"></script>
 </head>
 <body>
@@ -49,6 +69,7 @@
 			<div id="nav_contents">
 				<div id="view_records" class="nav_view show">
 					<br>
+					<button id="records_getSome">GetSome</button>
 					<button id="records_getAll">GetAll</button>
 					<button id="records_removeAll">RemoveAll</button>
 					<br>

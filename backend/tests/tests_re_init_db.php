@@ -1,10 +1,9 @@
 <?php
-// Get the app root dir and switch to it.
-$_appdir = getcwd() . '/../..'; // Move back two dirs.
-chdir($_appdir);
+// Change to the dir of this script.
+chdir(__DIR__ );
 
-include "backend/db_conn_p.php";
-$dbFile = "backend/db/tattle6.db";
+include "../db_conn_p.php";
+$dbFile = "../db/tattle6.db";
 
 echo "** Removing the database file **\n";
 unlink($dbFile);

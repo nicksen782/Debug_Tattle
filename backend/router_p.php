@@ -24,6 +24,9 @@ inputJsonToPost();
 // Check for an 'o' value.
 $reqMethod = "UNKNOWN";
 
+// Holds the user's rights. 
+$userRights = [];
+
 // DATABASE 
 include "backend/db_conn_p.php";
 if(!file_exists($dbFile)){ sqlite3_DB_PDO::db_init($dbFile); }
@@ -61,6 +64,7 @@ if(!$doNotRun_API_REQUEST){
 function API_REQUEST($o, $data){
 	// Globals.
 	global $reqMethod;
+	global $userRights;
 	global $active_apikey;
 	$active_apikey = $data['key'];
 
@@ -304,8 +308,27 @@ function validateClient(){
 		}
 	}
 
-	return $apikey;
+	return [
+		'username'  => $username,
+		'userRights'=> $userRights,
+		'apikey'    => $apikey,
+	];
 }
+//
+function get_users(){
+	global $dbFile;
+	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
+
+	$sql = "SELECT users.* FROM users ORDER BY uid DESC;";
+	$prep = $dbHandle->prepare( $sql );
+	$exec = $dbHandle->execute();
+	$results = $dbHandle->statement->fetchAll(PDO::FETCH_ASSOC);
+	for($i=0; $i<count($results); $i+=1){
+		$results[$i]['rightsResolved'] = get_rights( $results[$i]['apikey'] );
+	}
+	return $results;
+}
+
 // Returns the rights held by the specified apikey.
 function get_rights($apikey){
 	// Query the database to get the user's rights.
@@ -334,15 +357,16 @@ function get_rights($apikey){
 	$prep2 = $dbHandle->prepare( $sql2 );
 	$dbHandle->bind(':apikey', $apikey);
 	$exec2 = $dbHandle->execute();
-	$rows2 = $dbHandle->statement->fetch(PDO::FETCH_COLUMN);
-	$rows2 = (int) $rows2;
+	$rights = $dbHandle->statement->fetch(PDO::FETCH_COLUMN);
+	$rights = (int) $rights;
 
 	// Break out the individual right's names into an array.
 	$actualRights = [];
 	for($i=0; $i<count($allRights); $i+=1){
-		$binValue = decbin($allRights[$i]['bitvalue']);
-		// $allRights[$i]['mask'] = str_pad($binValue, 8, "0", STR_PAD_LEFT);
-		if($binValue & $rows2) { array_push($actualRights, $allRights[$i]['name']); }
+		// $mask = str_pad($binValue, 8, "0", STR_PAD_LEFT);
+		if($allRights[$i]['bitvalue'] & $rights) { 
+			array_push($actualRights, $allRights[$i]['name']); 
+		}
 	}
 
 	// If the user is DISABLED then reduce the rights down to only "DISABLED".
@@ -463,6 +487,10 @@ function logs_getAll(){
 	global $dbFile;
 	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
+	$stats = [];
+	$stats['error'] = false;
+	$stats['errors'] = [];
+
 	$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles ORDER BY tid DESC;";
 	$prep = $dbHandle->prepare( $sql );
 	$exec = $dbHandle->execute();
@@ -508,39 +536,104 @@ function logs_removeAll(){
 
 function logs_getSome($filterName, $filterValue){
 	// Bring in DB object
+	global $userRights;
 	global $dbFile;
 	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
+
+	$stats = [];
+	$stats['error'] = false;
+	$stats['errors'] = [];
+	$stats['results'] = [];
 
 	switch($filterName){
 		case "ownApikey"       : { 
 			global $active_apikey;
-			$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE apikey = :apikey;";
+			$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE apikey = :active_apikey ORDER BY tid DESC;";
 			$prep = $dbHandle->prepare( $sql );
 			$dbHandle->bind(':active_apikey'     , $active_apikey );
 			$exec = $dbHandle->execute();
+			$stats['results'] = $dbHandle->statement->fetchAll(PDO::FETCH_ASSOC);
 			break; 
 		}
 		case "otherUserApikey" : { 
-			$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE apikey = :apikey;";
-			$prep = $dbHandle->prepare( $sql );
-			$dbHandle->bind(':apikey'     , $filterValue );
-			$exec = $dbHandle->execute();
+			// Check rights.
+			if(in_array("ADMIN", $userRights)){
+				$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE user = :user ORDER BY tid DESC;";
+				$prep = $dbHandle->prepare( $sql );
+				$dbHandle->bind(':user'     , $filterValue );
+				$exec = $dbHandle->execute();
+				$stats['results'] = $dbHandle->statement->fetchAll(PDO::FETCH_ASSOC);
+			}
+			else{
+				$stats['error'] = true;
+				array_push($stats['errors'], "NOT AUTHORIZED: otherUserApikey");
+			}
 			break; 
 		}
 		case "unknownUser"     : { 
-			$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE user = 'UNKNOWN';";
-			$prep = $dbHandle->prepare( $sql );
-			$dbHandle->bind(':filterValue'     , $filterValue );
-			$exec = $dbHandle->execute();
+			// Check rights.
+			if(in_array("ADMIN", $userRights)){
+				$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE user = 'UNKNOWN' ORDER BY tid DESC;";
+				$prep = $dbHandle->prepare( $sql );
+				// $dbHandle->bind(':filterValue'     , $filterValue );
+				$exec = $dbHandle->execute();
+				$stats['results'] = $dbHandle->statement->fetchAll(PDO::FETCH_ASSOC);
+			}
+			else{
+				$stats['error'] = true;
+				array_push($stats['errors'], "NOT AUTHORIZED: unknownUser");
+			}
 			break; 
 		}
+		
 		default : { break; }
 	}
 
-	// Retrieve.
-	$results = $dbHandle->statement->fetchAll(PDO::FETCH_ASSOC);
+	echo json_encode($stats);
+}
+// TODO
+function logs_removeSome($filterName, $filterValue){
+	// Bring in DB object
+	global $userRights;
+	global $dbFile;
+	$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
-	echo json_encode($results);
+	$stats = [];
+	$stats['error'] = false;
+	$stats['errors'] = [];
+	$stats['results'] = [];
+
+	switch($filterName){
+		case "own"       : { 
+			global $active_apikey;
+			$sql = "DELETE FROM tattles WHERE tattles WHERE user = :user AND apikey = :active_apikey ORDER BY tid DESC;";
+			$prep = $dbHandle->prepare( $sql );
+			$dbHandle->bind(':user'         , $filterValue );
+			$dbHandle->bind(':active_apikey', $active_apikey );
+			$exec = $dbHandle->execute();
+			$stats['results'] = $dbHandle->statement->fetchAll(PDO::FETCH_ASSOC);
+			break; 
+		}
+		case "other" : { 
+			// Check rights.
+			if(in_array("ADMIN", $userRights)){
+				$sql = "SELECT tid,date,method,file,function,line,ip,user,data,errors FROM tattles WHERE user = :user ORDER BY tid DESC;";
+				$prep = $dbHandle->prepare( $sql );
+				$dbHandle->bind(':user'     , $filterValue );
+				$exec = $dbHandle->execute();
+				$stats['results'] = $dbHandle->statement->fetchAll(PDO::FETCH_ASSOC);
+			}
+			else{
+				$stats['error'] = true;
+				array_push($stats['errors'], "NOT AUTHORIZED: otherUserApikey");
+			}
+			break; 
+		}
+		
+		default : { break; }
+	}
+
+	echo json_encode($stats);
 }
 function logs_addOne($message, $silent){
 	global $reqMethod;
@@ -596,9 +689,9 @@ function logs_addOne($message, $silent){
 		$sql_error = $dbHandle->errorInfo();
 
 		$stats = [];
+		$stats['results'] = "";
 		$stats['error'] = false;
 		$stats['errors'] = [];
-		$stats['results'] = "";
 		// $stats['message'] = $message;
 		
 		if($sql_error[2]) { 

@@ -139,12 +139,12 @@ class sqlite3_DB_PDO{
 		$dbHandle = new sqlite3_DB_PDO($dbFile) or exit("cannot open the database");
 
 		// Get the SQL.
-		$sql = file_get_contents( "backend/db_init/init.sql" ) ;
+		if(file_exists("backend/db_init/personal.sql")){ $sql = file_get_contents( "backend/db_init/init.sql" ) ; }
+		else{ $sql = file_get_contents( "../db_init/init.sql" ) ; }
 
 		// Get the personal SQL (if it exists.)
-		if(file_exists("backend/db_init/personal.sql")){ 
-			$sql .= file_get_contents( "backend/db_init/personal.sql" ) ;
-		}
+		if     (file_exists("backend/db_init/personal.sql")){ $sql .= file_get_contents( "backend/db_init/personal.sql" ) ; }
+		else if(file_exists("../db_init/personal.sql"))     { $sql .= file_get_contents( "../db_init/personal.sql" ) ; }
 
 		// String split on pattern and then remove any blank lines.
 		$sqlArray = explode("-- **END*QUERY**", $sql);

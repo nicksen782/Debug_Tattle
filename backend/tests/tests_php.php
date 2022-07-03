@@ -1,5 +1,5 @@
 <?php
-// Get the app root dir.
+// Change to the dir of this script.
 chdir(__DIR__ );
 
 // Global.
@@ -25,8 +25,10 @@ function php_fgc ( $__method__, $__url__, $__apikey__, $__key__, $__value__ ){
 	if     ($__method__ == "GET" ){ $payload = $__url__ . "?o=add&key=$__apikey__&data=" . $__data__; }
 	else if($__method__ == "POST"){ $payload = $__url__; $__opts__['http']['content'] = $__data__; }
 
-	$text = file_get_contents( $payload, false, stream_context_create($__opts__) );
-	return $text;
+	$text = @file_get_contents( $payload, false, stream_context_create($__opts__) );
+	$error = error_get_last();
+	if($error){ return false; }
+	else      { return $text; }
 
 	// }, array($__method__, $__url__, $__apikey__, $__key__, $__value__) );
 }
@@ -47,17 +49,14 @@ function tester($tests){
 		); 
 		// $success=false;
 		if($success){ 
-			echo "TEST: " . $tests[$i]['k'] . " : " ; echo json_encode( $success ) . "\n"; 
+			echo str_pad($tests[$i]['k'], 20, " ", STR_PAD_RIGHT) . ": " ; echo ( $success ) . "\n"; 
 		}
 		else { 
-			echo $tests[$i]['k'] . '  : FAILED'."\n"; 
+			echo str_pad($tests[$i]['k'], 20, " ", STR_PAD_RIGHT) . ': ERROR'."\n"; 
 		}
 	}
 };
 tester([
-	// [ "m"=> "POST", "u"=>$urlHttps, "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_POST_HTTPS_FGC" , "v"=>"PHP_POST_HTTPS_FGC" ],
-	[ "m"=> "POST", "u"=>$urlHttp , "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_POST_HTTP_FGC " , "v"=>"PHP_POST_HTTP_FGC"  ],
-	// [ "m"=> "GET" , "u"=>$urlHttps, "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_GET_HTTPS_FGC " , "v"=>"PHP_GET_HTTPS_FGC"  ],
-	// [ "m"=> "GET" , "u"=>$urlHttp , "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_GET_HTTP_FGC  " , "v"=>"PHP_GET_HTTP_FGC"   ],
+	[ "m"=> "POST", "u"=>$urlHttp , "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_POST_HTTP_T1" , "v"=>"PHP_POST_HTTP_T1"  ],
+	[ "m"=> "POST", "u"=>$urlHttps, "f"=>"php_fgc", "a"=>$apikey, "k"=>"PHP_POST_HTTPS_T1", "v"=>"PHP_POST_HTTPS_T1" ],
 ]);
-echo "\n";

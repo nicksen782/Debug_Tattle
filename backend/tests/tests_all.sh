@@ -10,7 +10,7 @@ cd $BASEDIR
 
 
 # (NOTE: THIS WILL CLEAR AND RE-INIT THE DATABASE.)
-php tests_re_init_db.php
+# php tests_re_init_db.php
 
 # Run the PHP tests. 
 php tests_php.php

@@ -1,4 +1,4 @@
-let _APP = {};
+
 _APP.fetch = {
 	// Used for POST requests (configurable.)
 	json_post           : async function(url, body){
@@ -165,7 +165,8 @@ _APP.logs = {
 			let button1 = document.createElement("div");
 			button1.innerText = "Remove";
 			button1.classList.add("actionButton1");
-			button1.addEventListener("click", function(){ _APP.logs.removeOne(obj.rec.tid, obj.table); }, false);
+			// If admin then change "ownApikey" to "otherUserApikey"
+			button1.addEventListener("click", function(){ _APP.logs.user.removeOne(obj.rec.tid, obj.table, "ownApikey", obj.rec.user); }, false);
 			
 			// Create log button.
 			let button2 = document.createElement("div");
@@ -291,24 +292,121 @@ _APP.logs = {
 	},
 
 	// API calls.
-	getAll: function(){
+	admin: {
+		getAll: function(){
+			return new Promise(async function(resolve,reject){
+				let obj = {
+					"o":"getAll",
+					"key":_APP.auth.apikey,
+				};
+				let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+				_APP.logs.createTableRecs(resp);
+	
+				resolve(resp);
+			});
+		},
+		removeAll: function(){
+			return new Promise(async function(resolve,reject){
+				let obj = {
+					"o":"removeAll",
+					"key":_APP.auth.apikey,
+				};
+				let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+				await _APP.logs.admin.getAll();
+				resolve();
+			});
+		},
+
+		// TESTS
+		internalLogTest: function(){
+			return new Promise(async function(resolve,reject){
+				let obj = {
+					"o":"internalLogTest",
+					"key":_APP.auth.apikey,
+				};
+				let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+				await _APP.logs.admin.getAll();
+				resolve();
+			});
+		},
+		webLogTest: function(){
+			let _stats = (function (){ 
+				let e = new Error(); let lines = e.stack.split("\n").map(d=>d.trim());
+				let file = lines[1].replace("at ", "").split(":").filter(d=>isNaN(d)).join("").replace("//", "://"); 
+				let func = lines[2].split("at ")[1].split(" ")[0]; func = func.indexOf(".") ? func.substring(func.indexOf(".")+1) : func;
+				let line = lines[2].split(":").reverse()[1];
+				return { "file":file, "func":func, "line":line };
+			})();
+			return new Promise(async function(resolve,reject){
+				let obj = {
+					"o":"add",
+					"key":_APP.auth.apikey,
+					"data" : {
+						"origin" : { "FILE": _stats.file , "LINE": _stats.line , "FUNCTION" : _stats.func },
+						"data"   : { 
+							"webLogTest" : "webLogTest"
+						}
+					}
+				};
+				let resp = await _APP.fetch.json_post("gateway_p.php", obj);
+				await _APP.logs.admin.getAll();
+				resolve();
+			});
+		},
+	},
+	user: {
+	},
+
+	getSome: function(filterName="ownApikey", filterValue=""){
 		return new Promise(async function(resolve,reject){
+			let filterNames = [
+				"ownApikey",
+				"otherUserApikey",
+				"unknownUser",
+			];
+			if(filterNames.indexOf(filterName) == -1){ reject("ERROR: Invalid filterName."); return; }
+			switch(filterName){
+				case "ownApikey"      : { break; }
+				case "otherUserApikey": { break; }
+				case "unknownUser"    : { break; }
+			};
+
 			let obj = {
-				"o":"getAll",
-				"key":_APP.auth.apikey,
+				"o"          : "getSome",
+				"key"        : _APP.auth.apikey,
+				"filterName" : filterName,
+				"filterValue": filterValue,
 			};
 			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
-			_APP.logs.createTableRecs(resp);
+			if(resp.error){
+				console.log("resp.errors:", resp.errors);
+				reject(resp.errors);
+			}
+			else{
+				_APP.logs.createTableRecs(resp.results);
+			}
 
 			resolve(resp);
 		});
 	},
-	removeOne: function(tid, table){
+	removeOne: function(tid, table, filterName="ownApikey", filterValue=""){
 		return new Promise(async function(resolve,reject){
+			let filterNames = [
+				"own",
+				"other",
+			];
+			if(filterNames.indexOf(filterName) == -1){ reject("ERROR: Invalid filterName."); return; }
+			switch(filterName){
+				case "own"  : { break; }
+				case "other": { break; }
+			};
+
 			let obj = {
 				"o":"removeOne",
 				"key":_APP.auth.apikey,
 				"tid": tid,
+				"filterName" : filterName,
+				"filterValue": filterValue,
 			};
 			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
 
@@ -318,73 +416,30 @@ _APP.logs = {
 			}
 			else{
 				// Refresh the list.
-				await _APP.logs.getAll();
+				await _APP.logs.getSome();
 			}
 
 			resolve(resp);
-		});
-	},
-	removeAll: function(){
-		return new Promise(async function(resolve,reject){
-			let obj = {
-				"o":"removeAll",
-				"key":_APP.auth.apikey,
-			};
-			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
-			await _APP.logs.getAll();
-			resolve();
-		});
-	},
-	internalLogTest: function(){
-		return new Promise(async function(resolve,reject){
-			let obj = {
-				"o":"internalLogTest",
-				"key":_APP.auth.apikey,
-			};
-			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
-			await _APP.logs.getAll();
-			resolve();
-		});
-	},
-	webLogTest: function(){
-		let _stats = (function (){ 
-			let e = new Error(); let lines = e.stack.split("\n").map(d=>d.trim());
-			let file = lines[1].replace("at ", "").split(":").filter(d=>isNaN(d)).join("").replace("//", "://"); 
-			let func = lines[2].split("at ")[1].split(" ")[0]; func = func.indexOf(".") ? func.substring(func.indexOf(".")+1) : func;
-			let line = lines[2].split(":").reverse()[1];
-			return { "file":file, "func":func, "line":line };
-		})();
-		return new Promise(async function(resolve,reject){
-			let obj = {
-				"o":"add",
-				"key":_APP.auth.apikey,
-				"data" : {
-					"origin" : { "FILE": _stats.file , "LINE": _stats.line , "FUNCTION" : _stats.func },
-					"data"   : { 
-						"webLogTest" : "webLogTest"
-					}
-				}
-			};
-			let resp = await _APP.fetch.json_post("gateway_p.php", obj);
-			await _APP.logs.getAll();
-			resolve();
 		});
 	},
 	
 	sendToConsole: function(){},
 
 	init: function(){
+		let records_getSome    = document.getElementById("records_getSome");
+		records_getSome   .addEventListener("click", function(){_APP.logs.getSome();}, false);
+
 		let records_getAll    = document.getElementById("records_getAll");
-		records_getAll   .addEventListener("click", _APP.logs.getAll, false);
+		records_getAll   .addEventListener("click", _APP.logs.admin.getAll, false);
 
 		let records_removeAll = document.getElementById("records_removeAll");
-		records_removeAll.addEventListener("click", _APP.logs.removeAll, false);
+		records_removeAll.addEventListener("click", _APP.logs.admin.removeAll, false);
 
 		let records_test1 = document.getElementById("records_test1");
-		records_test1.addEventListener("click", _APP.logs.internalLogTest, false);
+		records_test1.addEventListener("click", _APP.logs.admin.internalLogTest, false);
 
 		let records_test2 = document.getElementById("records_test2");
-		records_test2.addEventListener("click", _APP.logs.webLogTest, false);
+		records_test2.addEventListener("click", _APP.logs.admin.webLogTest, false);
 	},
 };
 _APP.examples = {
@@ -616,11 +671,12 @@ window.onload = async function(){
 	window.onload = null;
 
 	// Read the apikey cookie and store to _APP.auth.apikey;
-	_APP.auth.retrieveApikeyCookie("debug_tattleV6_apikey");
+	// _APP.auth.retrieveApikeyCookie("debug_tattleV6_apikey");
+	_APP.auth.apikey = _APP.internal.apikey;
 
-	let isApikeyValid = _APP.auth.checkNewApikey(_APP.auth.apikey);
+	// let isApikeyValid = _APP.auth.checkNewApikey(_APP.auth.apikey);
 	// console.log("isApikeyValid:", isApikeyValid);
-	// console.log("_APP.auth.apikey:", _APP.auth.apikey);
+	console.log("_APP.auth.apikey:", _APP.auth.apikey);
 
 	// Clear the search.
 	let loc = window.location.href;
@@ -630,7 +686,7 @@ window.onload = async function(){
 	}
 
 	_APP.logs.init();
-	await _APP.logs.getAll();
+	await _APP.logs.getSome();
 	_APP.examples.init();
 	_APP.nav.init();
 };

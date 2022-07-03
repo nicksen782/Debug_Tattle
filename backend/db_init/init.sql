@@ -32,12 +32,12 @@ CREATE TABLE rights (
 -- **END*QUERY**
 
 INSERT INTO rights(rid, name, bitvalue) VALUES
-(null, "logs_getAll"   , 1),
-(null, "logs_getSome"  , 2),
-(null, "logs_addOne"   , 4),
-(null, "logs_removeOne", 8),
-(null, "logs_removeAll", 16),
-(null, "RESERVED_32"   , 32),
-(null, "DISABLED"      , 64),
-(null, "ADMIN"         , 128);
+(null, "DISABLED"   , 1),
+(null, "RESERVED_2" , 2),
+(null, "RESERVED_4" , 4),
+(null, "RESERVED_8" , 8),
+(null, "RESERVED_16", 16),
+(null, "RESERVED_32", 32),
+(null, "USER"       , 64),
+(null, "ADMIN"      , 128);
 -- **END*QUERY**
