@@ -2,6 +2,31 @@
 	box-sizing: border-box;
 }
 
+#header_logout {
+	float: right;
+	cursor: pointer;
+	color: buttontext;
+	padding: 1px 6px;
+	border: 1px outset #767676;
+	background-color: #efefef;
+	border-radius: 4px;
+	margin-left: 5px;
+}
+
+#header_user {
+	float: right;
+	cursor: pointer;
+	color: buttontext;
+	padding: 1px 6px;
+	border: 1px outset #767676;
+	background-color: #efefef;
+	border-radius: 4px;
+	margin-left: 5px;
+	min-width: 150px;
+	/* text-align:left; */
+	/* text-align:center; */
+}
+
 html,
 body {
 	height: 100%;
@@ -87,11 +112,18 @@ table.separated1 table.metadata tr th,
 table.separated1 table.metadata tr td {
 	padding: 0px 5px 5px 0px;
 	border: 0;
+/* 	border: 1px solid black; */
 	font-family: monospace;
+	text-align: left;
 }
 
 table.separated1 table.metadata tr th {
 	white-space: pre;
+	width:25%;
+}
+table.separated1 table.metadata tr td {
+	white-space: pre;
+	width:75%;
 }
 
 .actionButton1 {

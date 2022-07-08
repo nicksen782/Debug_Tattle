@@ -1,12 +1,10 @@
 // Test: GET: PHP 5.3.3 style. This is also compatible with PHP 5.4+.
-call_user_func_array(function($__method__, $__url__, $__apikey__, $__function__) {
+call_user_func_array(function($__method__, $__url__, $__apikey__, $__function__, $__messages__) {
 	$__data__ = http_build_query(array(
 		'o'    => 'add', 'key'  => $__apikey__,
 		'data' => array(
 			"origin" => array( "FILE" =>  __FILE__ , "LINE" =>  __LINE__ , "FUNCTION" => $__function__ ),
-			"data"   => array(
-				"NAMED_KEY" => "DESIRED_VALUE"
-			)
+			"data"   => $__messages__
 		)
 	));
 	$__opts__ = array( 'http' => array( 'method'=>$__method__, 'header'=>"Content-Type: application/x-www-form-urlencoded\r\n" ) );
@@ -16,4 +14,11 @@ call_user_func_array(function($__method__, $__url__, $__apikey__, $__function__)
 	$error = error_get_last();
 	if($error){ return false; }
 	else      { return $text; }
-}, array("POST", "__URL__", "__APIKEY__", __FUNCTION__) );
+}, 
+	array(
+		"POST", "__URL__", "__APIKEY__", __FUNCTION__, 
+		array(
+			'NAMED_KEY' => 'DESIRED_VALUE'
+		)
+	)
+);

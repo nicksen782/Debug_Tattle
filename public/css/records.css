@@ -34,8 +34,8 @@
 
 .log_data {
 	font-family: monospace;
-	width: 780px;
-	max-width: 780px;
+	width: 730px;
+	max-width: 730px;
 }
 
 .log_data .logs .log_filename {
@@ -60,8 +60,6 @@
 	white-space: pre-wrap;
 	font-family: monospace;
 	padding: 5px;
-	/* width: 760px; */
-	/* max-width: 760px; */
 	overflow-wrap: break-word;
 }
 
@@ -86,5 +84,5 @@
 
 table.metadata {
 	background-color: #f1e4e8;
-	width: 240px;
+	width: 290px;
 }

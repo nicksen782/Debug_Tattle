@@ -526,9 +526,9 @@ function logs_removeAll(){
 	logs_addOne($_message, true);
 
 	$stats = [];
+	$stats['results'] = "Removed all";
 	$stats['error'] = false;
 	$stats['errors'] = [];
-	$stats['results'] = "Removed all";
 	echo json_encode($stats);
 }
 

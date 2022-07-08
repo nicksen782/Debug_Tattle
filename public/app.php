@@ -32,8 +32,9 @@
 	<title>DebugTattle v6</title>
 	
 	<!-- Icons and fonts -->
-	<link rel="preload" as="style" href="https://cdn.materialdesignicons.com/6.5.95/css/materialdesignicons.min.css" />
-	<link rel="stylesheet" href="https://cdn.materialdesignicons.com/6.5.95/css/materialdesignicons.min.css" />
+	<!-- <link rel="preload" as="style" href="https://cdn.materialdesignicons.com/6.5.95/css/materialdesignicons.min.css" /> -->
+	<!-- <link rel="stylesheet" href="https://cdn.materialdesignicons.com/6.5.95/css/materialdesignicons.min.css" /> -->
+	<script src="//code.iconify.design/1/1.0.6/iconify.min.js"></script>
 
 	<!-- include the stylesheet file -->
 	<link href="css/app.css" rel="stylesheet" type="text/css">
@@ -56,14 +57,33 @@
 <body>
 	
 	<div id="content">
-		<header id="header">DebugTattle v6</header>
+		<header id="header">
+			DebugTattle v6
+			<div id="header_user">
+				<span class="iconify" data-icon="mdi-account"></span>
+				<span></span>
+			</div>
+			<div id="header_logout">
+				<span class="iconify" data-icon="mdi-logout"></span>
+				Logout
+			</div>
+		</header>
 		<br>
 
 		<div id="nav">
 			<div id="nav_tabs">
-				<div class="nav_tab active" viewid="view_records">RECORDS</div>
-				<div class="nav_tab" viewid="view_examples">EXAMPLES</div>
-				<div class="nav_tab" viewid="view_admin">ADMIN</div>
+				<div class="nav_tab active" viewid="view_records">
+					<span class="iconify" data-icon="mdi-database"></span>
+					RECORDS
+				</div>
+				<div class="nav_tab" viewid="view_examples">
+					<span class="iconify" data-icon="mdi-test-tube"></span>
+					EXAMPLES
+				</div>
+				<div class="nav_tab" viewid="view_admin">
+					<span class="iconify" data-icon="mdi-shield-crown-outline"></span>
+					ADMIN
+				</div>
 			</div>
 
 			<div id="nav_contents">

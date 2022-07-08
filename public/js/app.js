@@ -1,4 +1,3 @@
-
 _APP.fetch = {
 	// Used for POST requests (configurable.)
 	json_post           : async function(url, body){
@@ -105,16 +104,62 @@ _APP.auth = {
 		},
 	},
 	logout: function(){
+		if(!confirm("Are you sure that you want to log-out?")){
+			return;
+		}
 		// Delete the apikey cookie.
 		_APP.auth.cookies.deleteCookie("debug_tattleV6_apikey");
 
 		// Redirect to the login page with a message.
 		let url = window.location.origin + window.location.pathname.replace("app.php", "login.php") + `?msg=MSG_LOGIN_LOGOUT`
 		window.location.href = url; 
-		;
+	},
+
+	init: function(){
+		let header_user   = document.getElementById("header_user").querySelector("span:nth-child(2)");
+		let header_logout = document.getElementById("header_logout");
+
+		header_user.innerText = _APP.internal.username;
+		header_logout.addEventListener("click", _APP.auth.logout, false);
+
+		console.log("header_user:",header_user);
+		console.log("header_logout:",header_logout);
 	},
 };
 _APP.logs = {
+	// Time ago utility.
+	timeAgo: function(unixTime){
+		var d = Math.floor(Math.abs(unixTime - new Date().getTime()) / 1000);  // delta
+		var r = {};                                                // result
+		var s = {                                                  // structure
+			year  : 31536000, month : 2592000, week  : 604800,  
+			day   : 86400   , hour  : 3600   , minute: 60, 
+			second: 1,
+		};
+		Object.keys(s).forEach(function(key){
+			r[key] = Math.floor(d / s[key]);
+			d -= r[key] * s[key];
+			if(["hour","minute","second"].indexOf(key) !=-1){
+				r[key] = r[key].toString().padStart(2, "0");
+			}
+		});
+		
+		let ago = "";
+		if(r.year          ) { ago += `${r.year  }y `;} 
+		if(r.week          ) { ago += `${r.week  }w `;} 
+		if(r.month         ) { ago += `${r.month }M `;} 
+		if(r.day    != "00") { ago += `${r.day   }d `;} 
+		if(r.hour   != "00") { ago += `${r.hour  }h `;} 
+		ago += `${r.minute ? r.minute : "00"}m `; 
+		ago += `${r.second ? r.second : "00"}s `; 
+		ago = ago.trim() + " ago";
+		
+		return {
+			r: r,
+			ago: ago
+		};
+	},
+
 	// Table creation.
 	createTableRec: function(rec, frag){
 		let createTableContainer = function(rec){
@@ -193,18 +238,29 @@ _APP.logs = {
 				table_meta.classList.add("metadata");
 				
 				let data = [
-					{ "k":"date"    , "l":"DATE    :", },
-					{ "k":"ip"      , "l":"ORIGIN  :", },
-					{ "k":"function", "l":"FUNCTION:", },
-					{ "k":"line"    , "l":"LINE    :", },
-					{ "k":"method"  , "l":"METHOD  :", },
-					{ "k":"user"    , "l":"USER    :", },
+					{ "k":"ago"     , "l":"Ago     :" },
+					{ "k":"date"    , "l":"DATE    :" },
+					{ "k":"ip"      , "l":"ORIGIN  :" },
+					{ "k":"function", "l":"FUNCTION:" },
+					{ "k":"line"    , "l":"LINE    :" },
+					{ "k":"method"  , "l":"METHOD  :" },
+					{ "k":"user"    , "l":"USER    :" },
 				];
 				data.forEach(function(data_rec){
 					// Break out the values.
-					let key   = data_rec.k;
-					let label = data_rec.l;
-					let value = rec[key] ;
+					let label ;
+					let value ;
+
+					if(data_rec.k == "ago"){
+						// Break out the values.
+						label = data_rec.l;
+						value = _APP.logs.timeAgo( new Date(rec.date).getTime() ).ago ;
+					}
+					else{
+						// Break out the values.
+						label = data_rec.l;
+						value = rec[ data_rec.k ] ;
+					}
 
 					// Create the row.
 					let tr_row = table_meta.insertRow(-1);
@@ -423,7 +479,6 @@ _APP.logs = {
 			resolve(resp);
 		});
 	},
-	
 	
 	sendToConsole: function(){},
 
@@ -677,6 +732,7 @@ window.onload = async function(){
 	}
 
 	// Inits.
+	_APP.auth.init();
 	_APP.logs.init();
 	_APP.examples.init();
 	_APP.nav.init();
